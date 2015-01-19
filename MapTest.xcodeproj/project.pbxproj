@@ -7,12 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9B091F3C1A47F0D400E2D8A7 /* ContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B091F391A47F0D400E2D8A7 /* ContainerViewController.swift */; };
+		9B091F3D1A47F0D400E2D8A7 /* SidePanelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B091F3A1A47F0D400E2D8A7 /* SidePanelViewController.swift */; };
+		9B30117C1A586EB800E2C428 /* barbutton.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B30117B1A586EB800E2C428 /* barbutton.png */; };
+		9B6179A51A350D1F00AB0FE8 /* BarDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B6179A41A350D1F00AB0FE8 /* BarDetail.swift */; };
+		9B7AB6DB1A638A6E00BC845E /* phone.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B7AB6DA1A638A6E00BC845E /* phone.png */; };
+		9B7AB6E71A642A5800BC845E /* cursor2.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B7AB6E61A642A5800BC845E /* cursor2.png */; };
+		9B7AB6E91A67779300BC845E /* smallerbar.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 9B7AB6E81A67779300BC845E /* smallerbar.jpg */; };
+		9B9865B51A35405B004E07A2 /* DealCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9865B41A35405B004E07A2 /* DealCell.swift */; };
+		9B9865BD1A356707004E07A2 /* icon1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B9865BA1A356707004E07A2 /* icon1.png */; };
+		9B9865C11A3569DC004E07A2 /* DailyDeals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9865C01A3569DC004E07A2 /* DailyDeals.swift */; };
+		9BBD0F511A37E39500F4E54E /* test.json in Resources */ = {isa = PBXBuildFile; fileRef = 9BBD0F501A37E39500F4E54E /* test.json */; };
+		9BBD0F8B1A39553500F4E54E /* launchScreen.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BBD0F8A1A39553500F4E54E /* launchScreen.png */; };
+		9BBD0F8F1A3D47A500F4E54E /* transparent.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BBD0F8E1A3D47A500F4E54E /* transparent.png */; };
+		9BBD0F911A3D4B0900F4E54E /* t2.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BBD0F901A3D4B0900F4E54E /* t2.png */; };
+		9BBD0F9A1A4549E100F4E54E /* Cedar Falls, IA.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 9BBD0F981A4549E100F4E54E /* Cedar Falls, IA.gpx */; };
+		9BBD0F9B1A4549E100F4E54E /* Iowa City, IA.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 9BBD0F991A4549E100F4E54E /* Iowa City, IA.gpx */; };
+		9BBD0F9D1A4549FF00F4E54E /* Ames, IA.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 9BBD0F9C1A4549FF00F4E54E /* Ames, IA.gpx */; };
 		9BBFDE9B1A32511D00AF510D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBFDE9A1A32511D00AF510D /* AppDelegate.swift */; };
-		9BBFDE9D1A32511D00AF510D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBFDE9C1A32511D00AF510D /* ViewController.swift */; };
+		9BBFDE9D1A32511D00AF510D /* BarMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBFDE9C1A32511D00AF510D /* BarMap.swift */; };
 		9BBFDEA01A32511D00AF510D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9BBFDE9E1A32511D00AF510D /* Main.storyboard */; };
 		9BBFDEA21A32511D00AF510D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9BBFDEA11A32511D00AF510D /* Images.xcassets */; };
 		9BBFDEA51A32511D00AF510D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BBFDEA31A32511D00AF510D /* LaunchScreen.xib */; };
 		9BBFDEB11A32511E00AF510D /* MapTestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBFDEB01A32511E00AF510D /* MapTestTests.swift */; };
+		9BBFDEBB1A32513A00AF510D /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BBFDEBA1A32513A00AF510D /* MapKit.framework */; };
+		9BBFDEBD1A32514000AF510D /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BBFDEBC1A32514000AF510D /* CoreLocation.framework */; };
+		9BBFDEC11A34FECD00AF510D /* BarAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBFDEC01A34FECD00AF510D /* BarAnnotation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,16 +46,36 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9BBFDE951A32511D00AF510D /* MapTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MapTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B091F391A47F0D400E2D8A7 /* ContainerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContainerViewController.swift; sourceTree = "<group>"; };
+		9B091F3A1A47F0D400E2D8A7 /* SidePanelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SidePanelViewController.swift; sourceTree = "<group>"; };
+		9B30117B1A586EB800E2C428 /* barbutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = barbutton.png; sourceTree = "<group>"; };
+		9B6179A41A350D1F00AB0FE8 /* BarDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BarDetail.swift; sourceTree = "<group>"; };
+		9B7AB6DA1A638A6E00BC845E /* phone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = phone.png; sourceTree = "<group>"; };
+		9B7AB6E61A642A5800BC845E /* cursor2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cursor2.png; sourceTree = "<group>"; };
+		9B7AB6E81A67779300BC845E /* smallerbar.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = smallerbar.jpg; sourceTree = "<group>"; };
+		9B9865B41A35405B004E07A2 /* DealCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealCell.swift; sourceTree = "<group>"; };
+		9B9865BA1A356707004E07A2 /* icon1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon1.png; sourceTree = "<group>"; };
+		9B9865C01A3569DC004E07A2 /* DailyDeals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DailyDeals.swift; sourceTree = "<group>"; };
+		9BBD0F501A37E39500F4E54E /* test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = test.json; sourceTree = "<group>"; };
+		9BBD0F8A1A39553500F4E54E /* launchScreen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launchScreen.png; sourceTree = "<group>"; };
+		9BBD0F8E1A3D47A500F4E54E /* transparent.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = transparent.png; sourceTree = "<group>"; };
+		9BBD0F901A3D4B0900F4E54E /* t2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = t2.png; sourceTree = "<group>"; };
+		9BBD0F981A4549E100F4E54E /* Cedar Falls, IA.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Cedar Falls, IA.gpx"; sourceTree = "<group>"; };
+		9BBD0F991A4549E100F4E54E /* Iowa City, IA.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Iowa City, IA.gpx"; sourceTree = "<group>"; };
+		9BBD0F9C1A4549FF00F4E54E /* Ames, IA.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Ames, IA.gpx"; sourceTree = "<group>"; };
+		9BBFDE951A32511D00AF510D /* tabsaver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tabsaver.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BBFDE991A32511D00AF510D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9BBFDE9A1A32511D00AF510D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		9BBFDE9C1A32511D00AF510D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		9BBFDE9C1A32511D00AF510D /* BarMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarMap.swift; sourceTree = "<group>"; };
 		9BBFDE9F1A32511D00AF510D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9BBFDEA11A32511D00AF510D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		9BBFDEA41A32511D00AF510D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		9BBFDEAA1A32511E00AF510D /* MapTestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MapTestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BBFDEAF1A32511E00AF510D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9BBFDEB01A32511E00AF510D /* MapTestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapTestTests.swift; sourceTree = "<group>"; };
+		9BBFDEBA1A32513A00AF510D /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		9BBFDEBC1A32514000AF510D /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		9BBFDEC01A34FECD00AF510D /* BarAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BarAnnotation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +83,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BBFDEBD1A32514000AF510D /* CoreLocation.framework in Frameworks */,
+				9BBFDEBB1A32513A00AF510D /* MapKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,9 +98,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9B9865C61A358FB6004E07A2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9BBFDEBC1A32514000AF510D /* CoreLocation.framework */,
+				9BBFDEBA1A32513A00AF510D /* MapKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		9BBFDE8C1A32511D00AF510D = {
 			isa = PBXGroup;
 			children = (
+				9BBD0F9C1A4549FF00F4E54E /* Ames, IA.gpx */,
+				9BBD0F981A4549E100F4E54E /* Cedar Falls, IA.gpx */,
+				9BBD0F991A4549E100F4E54E /* Iowa City, IA.gpx */,
+				9B9865C61A358FB6004E07A2 /* Frameworks */,
 				9BBFDE971A32511D00AF510D /* MapTest */,
 				9BBFDEAD1A32511E00AF510D /* MapTestTests */,
 				9BBFDE961A32511D00AF510D /* Products */,
@@ -68,7 +123,7 @@
 		9BBFDE961A32511D00AF510D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9BBFDE951A32511D00AF510D /* MapTest.app */,
+				9BBFDE951A32511D00AF510D /* tabsaver.app */,
 				9BBFDEAA1A32511E00AF510D /* MapTestTests.xctest */,
 			);
 			name = Products;
@@ -78,11 +133,18 @@
 			isa = PBXGroup;
 			children = (
 				9BBFDE9A1A32511D00AF510D /* AppDelegate.swift */,
-				9BBFDE9C1A32511D00AF510D /* ViewController.swift */,
 				9BBFDE9E1A32511D00AF510D /* Main.storyboard */,
 				9BBFDEA11A32511D00AF510D /* Images.xcassets */,
 				9BBFDEA31A32511D00AF510D /* LaunchScreen.xib */,
 				9BBFDE981A32511D00AF510D /* Supporting Files */,
+				9BBFDE9C1A32511D00AF510D /* BarMap.swift */,
+				9BBFDEC01A34FECD00AF510D /* BarAnnotation.swift */,
+				9B6179A41A350D1F00AB0FE8 /* BarDetail.swift */,
+				9B9865B41A35405B004E07A2 /* DealCell.swift */,
+				9B9865C01A3569DC004E07A2 /* DailyDeals.swift */,
+				9BBD0F501A37E39500F4E54E /* test.json */,
+				9B091F391A47F0D400E2D8A7 /* ContainerViewController.swift */,
+				9B091F3A1A47F0D400E2D8A7 /* SidePanelViewController.swift */,
 			);
 			path = MapTest;
 			sourceTree = "<group>";
@@ -90,6 +152,14 @@
 		9BBFDE981A32511D00AF510D /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9B30117B1A586EB800E2C428 /* barbutton.png */,
+				9B7AB6DA1A638A6E00BC845E /* phone.png */,
+				9B7AB6E61A642A5800BC845E /* cursor2.png */,
+				9B7AB6E81A67779300BC845E /* smallerbar.jpg */,
+				9BBD0F8E1A3D47A500F4E54E /* transparent.png */,
+				9BBD0F901A3D4B0900F4E54E /* t2.png */,
+				9B9865BA1A356707004E07A2 /* icon1.png */,
+				9BBD0F8A1A39553500F4E54E /* launchScreen.png */,
 				9BBFDE991A32511D00AF510D /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -129,7 +199,7 @@
 			);
 			name = MapTest;
 			productName = MapTest;
-			productReference = 9BBFDE951A32511D00AF510D /* MapTest.app */;
+			productReference = 9BBFDE951A32511D00AF510D /* tabsaver.app */;
 			productType = "com.apple.product-type.application";
 		};
 		9BBFDEA91A32511E00AF510D /* MapTestTests */ = {
@@ -161,9 +231,11 @@
 				TargetAttributes = {
 					9BBFDE941A32511D00AF510D = {
 						CreatedOnToolsVersion = 6.0.1;
+						DevelopmentTeam = ZRX52R3VBY;
 					};
 					9BBFDEA91A32511E00AF510D = {
 						CreatedOnToolsVersion = 6.0.1;
+						DevelopmentTeam = ZRX52R3VBY;
 						TestTargetID = 9BBFDE941A32511D00AF510D;
 					};
 				};
@@ -192,9 +264,21 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BBD0F8B1A39553500F4E54E /* launchScreen.png in Resources */,
+				9BBD0F911A3D4B0900F4E54E /* t2.png in Resources */,
+				9B7AB6E91A67779300BC845E /* smallerbar.jpg in Resources */,
+				9B7AB6DB1A638A6E00BC845E /* phone.png in Resources */,
+				9BBD0F511A37E39500F4E54E /* test.json in Resources */,
 				9BBFDEA01A32511D00AF510D /* Main.storyboard in Resources */,
+				9BBD0F8F1A3D47A500F4E54E /* transparent.png in Resources */,
+				9BBD0F9A1A4549E100F4E54E /* Cedar Falls, IA.gpx in Resources */,
+				9BBD0F9D1A4549FF00F4E54E /* Ames, IA.gpx in Resources */,
 				9BBFDEA51A32511D00AF510D /* LaunchScreen.xib in Resources */,
 				9BBFDEA21A32511D00AF510D /* Images.xcassets in Resources */,
+				9B30117C1A586EB800E2C428 /* barbutton.png in Resources */,
+				9B9865BD1A356707004E07A2 /* icon1.png in Resources */,
+				9BBD0F9B1A4549E100F4E54E /* Iowa City, IA.gpx in Resources */,
+				9B7AB6E71A642A5800BC845E /* cursor2.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,7 +296,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9BBFDE9D1A32511D00AF510D /* ViewController.swift in Sources */,
+				9BBFDEC11A34FECD00AF510D /* BarAnnotation.swift in Sources */,
+				9BBFDE9D1A32511D00AF510D /* BarMap.swift in Sources */,
+				9B091F3C1A47F0D400E2D8A7 /* ContainerViewController.swift in Sources */,
+				9B091F3D1A47F0D400E2D8A7 /* SidePanelViewController.swift in Sources */,
+				9B6179A51A350D1F00AB0FE8 /* BarDetail.swift in Sources */,
+				9B9865C11A3569DC004E07A2 /* DailyDeals.swift in Sources */,
+				9B9865B51A35405B004E07A2 /* DealCell.swift in Sources */,
 				9BBFDE9B1A32511D00AF510D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,9 +426,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = MapTest/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = tabsaver;
+				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -346,9 +446,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = MapTest/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = tabsaver;
+				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 			};
 			name = Release;
 		};
@@ -356,6 +465,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -366,7 +477,8 @@
 				);
 				INFOPLIST_FILE = MapTestTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = MapTestTests;
+				PROVISIONING_PROFILE = "";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MapTest.app/MapTest";
 			};
 			name = Debug;
@@ -375,13 +487,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = MapTestTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = MapTestTests;
+				PROVISIONING_PROFILE = "";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MapTest.app/MapTest";
 			};
 			name = Release;
@@ -405,6 +520,7 @@
 				9BBFDEB61A32511E00AF510D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9BBFDEB71A32511E00AF510D /* Build configuration list for PBXNativeTarget "MapTestTests" */ = {
 			isa = XCConfigurationList;
@@ -413,6 +529,7 @@
 				9BBFDEB91A32511E00AF510D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
