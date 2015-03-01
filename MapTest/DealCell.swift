@@ -1,6 +1,6 @@
 //
 //  DealCell.swift
-//  Mug Night
+//  TabSaver
 //
 //  Created by Lee Robinson on 12/7/14.
 //  Copyright (c) 2014 Lee Robinson. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  Mug Night
+//  TabSaver
 //
 //  Created by Lee Robinson on 12/5/14.
 //  Copyright (c) 2014 Lee Robinson. All rights reserved.
@@ -15,19 +15,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        window = UIWindow(frame: UIScreen.mainScreen().bounds)
-        //window?.tintColor = UIColor.whiteColor()
-        
-        let containerViewController = ContainerViewController()
-        
-        //containerViewController.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
-
-        window!.rootViewController = containerViewController
-        //window!.rootViewController?.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
-        //window!.rootViewController?.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
-
-        window!.makeKeyAndVisible()
-
         return true
     }
 
@@ -52,7 +39,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
 
 }
 

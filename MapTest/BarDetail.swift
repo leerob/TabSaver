@@ -1,6 +1,6 @@
 //
 //  BarDetail.swift
-//  Mug Night
+//  TabSaver
 //
 //  Created by Lee Robinson on 12/7/14.
 //  Copyright (c) 2014 Lee Robinson. All rights reserved.
@@ -15,7 +15,11 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var barAddress: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var segControl: UISegmentedControl!
-
+    @IBOutlet weak var button: UIButton!
+    @IBOutlet weak var button2: UIButton!
+    @IBOutlet weak var button3: UIButton!
+    @IBOutlet weak var button4: UIButton!
+    
     var name = ""
     var address = ""
     var number = ""
@@ -30,28 +34,38 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var detailName = ""
     var detailTown = ""
-    var detailDict = [:]
+    var amesArr = [] as NSArray
+    var icArr = [] as NSArray
+    var cfArr = [] as NSArray
     var deals = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        var arrayName = getArrayName()
-        var barArray = detailDict[arrayName] as NSArray
 
-        for bar in barArray{
-            var barName = bar["name"] as NSString
+        var arr = getBarArray()
+
+        for(var i = 0; i < arr.count; i++){
+            
+            var barName = arr[i]["name"] as NSString
+            
             if barName == detailName {
-                sundayDeals = bar["Sunday"] as NSArray
-                mondayDeals = bar["Monday"] as NSArray
-                tuesdayDeals = bar["Tuesday"] as NSArray
-                wednesdayDeals = bar["Wednesday"] as NSArray
-                thursdayDeals = bar["Thursday"] as NSArray
-                fridayDeals = bar["Friday"] as NSArray
-                saturdayDeals = bar["Saturday"] as NSArray
-                address = bar["address"] as NSString
-                number = bar["number"] as NSString
-                website = bar["website"] as NSString
+                var sun = arr[i]["Sunday"] as NSString
+                sundayDeals = sun.componentsSeparatedByString(",")
+                var mon = arr[i]["Monday"] as NSString
+                mondayDeals = mon.componentsSeparatedByString(",")
+                var tue = arr[i]["Tuesday"] as NSString
+                tuesdayDeals = tue.componentsSeparatedByString(",")
+                var wed = arr[i]["Wednesday"] as NSString
+                wednesdayDeals = wed.componentsSeparatedByString(",")
+                var thur = arr[i]["Thursday"] as NSString
+                thursdayDeals = thur.componentsSeparatedByString(",")
+                var fri = arr[i]["Friday"] as NSString
+                fridayDeals = fri.componentsSeparatedByString(",")
+                var sat = arr[i]["Saturday"] as NSString
+                saturdayDeals = sat.componentsSeparatedByString(",")
+                address = arr[i]["address"] as NSString
+                number = arr[i]["number"] as NSString
+                website = arr[i]["website"] as NSString
                 name = barName
             }
         }
@@ -64,20 +78,37 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
         barName.text = name
         barAddress.text = address
+        var blue = UIColor(red: 57.0/255.0, green: 105.0/255.0, blue: 247.0/255.0, alpha: 1.0)
+        segControl.tintColor = blue
         
-        tableView.backgroundColor = UIColor.darkGrayColor()
+        var phone = UIImage(named: "phone1-50.png")
+        var img = scaleImage(phone!, newSize: CGSize(width: 25.0, height: 25.0))
+        button.setImage(img, forState: UIControlState.Normal)
+        
+        var globe = UIImage(named: "globe-50.png")
+        var img2 = scaleImage(globe!, newSize: CGSize(width: 25.0, height: 25.0))
+        button2.setImage(img2, forState: UIControlState.Normal)
+        
+        var star = UIImage(named: "star-50.png")
+        var img3 = scaleImage(star!, newSize: CGSize(width: 25.0, height: 25.0))
+        button3.setImage(img3, forState: UIControlState.Normal)
+        
+        var loc = UIImage(named: "location-50.png")
+        var img4 = scaleImage(loc!, newSize: CGSize(width: 25.0, height: 25.0))
+        button4.setImage(img4, forState: UIControlState.Normal)
+
     }
-    
-    func getArrayName() -> NSString {
+
+    func getBarArray() -> NSArray {
         switch(detailTown){
             case "Ames":
-                return "amesBars"
+                return amesArr
             case "Cedar Falls":
-                return "cedarFallsBars"
+                return cfArr
             case "Iowa City":
-                return "iowaCityBars"
+                return icArr
             default:
-                return "amesBars"
+                return amesArr
         }
     }
     
@@ -155,30 +186,80 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
     }
     
     @IBAction func callBar(sender: AnyObject) {
-
-        // Create the alert controller
-        var alertController = UIAlertController(title: "Are you sure you want to call \(self.number)?", message: "", preferredStyle: .Alert)
         
-        // Create the actions
-        var okAction = UIAlertAction(title: "Call", style: UIAlertActionStyle.Default) {
-            UIAlertAction in
-            var url:NSURL = NSURL(string: "tel://\(self.number)")!
-            UIApplication.sharedApplication().openURL(url)
+        var alertController = UIAlertController()
+        
+        if(self.number == "No Number"){
+            alertController = UIAlertController(title: "We're sorry!", message: "This bar doesn't have a phone.", preferredStyle: .Alert)
+            
+            var cancelAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel) {
+                UIAlertAction in
+                
+            }
+            alertController.addAction(cancelAction)
+        }
+            
+        else{
+            alertController = UIAlertController(title: "Are you sure you want to call \(self.number)?", message: "", preferredStyle: .Alert)
+            
+            var okAction = UIAlertAction(title: "Call", style: UIAlertActionStyle.Default) {
+                UIAlertAction in
+                var url:NSURL = NSURL(string: "tel://\(self.number)")!
+                UIApplication.sharedApplication().openURL(url)
+            }
+            
+            var cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) {
+                UIAlertAction in
+                
+            }
+            
+            alertController.addAction(okAction)
+            alertController.addAction(cancelAction)
         }
 
-        var cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) {
-            UIAlertAction in
- 
-        }
-        
-        // Add the actions
-        alertController.addAction(okAction)
-        alertController.addAction(cancelAction)
-        alertController.view.tintColor = UIColor.blackColor()
-        
-        // Present the controller
         self.presentViewController(alertController, animated: true, completion: nil)
+    }
+
+    @IBAction func createFavorite(sender: AnyObject) {
+        var alertController = UIAlertController(title: "We're sorry!", message: "Favorite bars will be coming in the next update.", preferredStyle: .Alert)
+        var cancelAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel) {
+            UIAlertAction in
+        }
+        alertController.addAction(cancelAction)
+        self.presentViewController(alertController, animated: true, completion: nil)
+    }
+    
+    @IBAction func goToMaps(sender: AnyObject) {
+        var formattedAddress = self.address.stringByReplacingOccurrencesOfString(" ", withString: "+", options: NSStringCompareOptions.LiteralSearch, range: nil)
+        var loc = "http://maps.apple.com/?q=" + self.address + ",+" + detailTown + ",+IA"
+        var formattedLoc = loc.stringByReplacingOccurrencesOfString(" ", withString: "+", options: NSStringCompareOptions.LiteralSearch, range: nil)
+
+        var url:NSURL = NSURL(string: formattedLoc)!
+        UIApplication.sharedApplication().openURL(url)
+    }
+    
+    func scaleImage(image: UIImage, newSize: CGSize) -> UIImage {
         
+        var scaledSize = newSize
+        var scaleFactor: CGFloat = 1.0
+        
+        if image.size.width > image.size.height {
+            scaleFactor = image.size.width / image.size.height
+            scaledSize.width = newSize.width
+            scaledSize.height = newSize.width / scaleFactor
+        } else {
+            scaleFactor = image.size.height / image.size.width
+            scaledSize.height = newSize.height
+            scaledSize.width = newSize.width / scaleFactor
+        }
+        
+        UIGraphicsBeginImageContextWithOptions(scaledSize, false, 0.0)
+        let scaledImageRect = CGRectMake(0.0, 0.0, scaledSize.width, scaledSize.height)
+        [image .drawInRect(scaledImageRect)]
+        let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return scaledImage
     }
     
     override func didReceiveMemoryWarning() {
