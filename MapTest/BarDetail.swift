@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import CoreData
 
-class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate {
 
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var barName: UILabel!
@@ -38,6 +39,14 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
     var icArr = [] as NSArray
     var cfArr = [] as NSArray
     var deals = []
+    var selected = false
+    
+    var primary = UIColor()
+    var secondary = UIColor()
+    var colors = Colors()
+    var coreDataHelper = CoreDataHelper()
+    var theme = 0
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,26 +55,26 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
         for(var i = 0; i < arr.count; i++){
             
-            var barName = arr[i]["name"] as NSString
+            var barName = arr[i]["name"] as! String
             
             if barName == detailName {
-                var sun = arr[i]["Sunday"] as NSString
+                var sun = arr[i]["Sunday"] as! NSString
                 sundayDeals = sun.componentsSeparatedByString(",")
-                var mon = arr[i]["Monday"] as NSString
+                var mon = arr[i]["Monday"] as! NSString
                 mondayDeals = mon.componentsSeparatedByString(",")
-                var tue = arr[i]["Tuesday"] as NSString
+                var tue = arr[i]["Tuesday"] as! NSString
                 tuesdayDeals = tue.componentsSeparatedByString(",")
-                var wed = arr[i]["Wednesday"] as NSString
+                var wed = arr[i]["Wednesday"] as! NSString
                 wednesdayDeals = wed.componentsSeparatedByString(",")
-                var thur = arr[i]["Thursday"] as NSString
+                var thur = arr[i]["Thursday"] as! NSString
                 thursdayDeals = thur.componentsSeparatedByString(",")
-                var fri = arr[i]["Friday"] as NSString
+                var fri = arr[i]["Friday"] as! NSString
                 fridayDeals = fri.componentsSeparatedByString(",")
-                var sat = arr[i]["Saturday"] as NSString
+                var sat = arr[i]["Saturday"] as! NSString
                 saturdayDeals = sat.componentsSeparatedByString(",")
-                address = arr[i]["address"] as NSString
-                number = arr[i]["number"] as NSString
-                website = arr[i]["website"] as NSString
+                address = arr[i]["address"] as! String
+                number = arr[i]["number"] as! String
+                website = arr[i]["website"] as! String
                 name = barName
             }
         }
@@ -73,7 +82,10 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
         // Get day of the week
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE"
-        let dayOfWeekString = dateFormatter.stringFromDate(NSDate())
+        var currDate = NSDate()
+        var twoHours = 2 * 60 * 60 as NSTimeInterval
+        var newDate = currDate.dateByAddingTimeInterval(-twoHours)
+        let dayOfWeekString = dateFormatter.stringFromDate(newDate)
         setSeg(dayOfWeekString)
         
         barName.text = name
@@ -96,7 +108,48 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
         var loc = UIImage(named: "location-50.png")
         var img4 = scaleImage(loc!, newSize: CGSize(width: 25.0, height: 25.0))
         button4.setImage(img4, forState: UIControlState.Normal)
+        
+        // Change colors based on theme
+        switch(theme){
+            case 0: // Default
+                break;
+            case 1: // Ames
+                primary = colors.red
+                secondary = colors.yellow3
+                changeTheme()
+                break;
+            case 2: // Iowa City
+                primary = colors.yellow2
+                secondary = colors.black
+                self.view.backgroundColor = secondary
+                changeTheme()
+                break;
+            case 3: // Cedar Falls
+                primary = colors.purple
+                secondary = colors.yellow
+                changeTheme()
+                break;
+            default:
+                break;
+        }
 
+        if(coreDataHelper.isFavorite("Favorites", key: "list", barName: name)){
+            toggleFavorite(true, save: false)
+            selected = true
+        }
+
+    }
+    
+    func changeTheme(){
+        
+        segControl.tintColor = primary
+        button.tintColor = primary
+        button2.tintColor = primary
+        button3.tintColor = primary
+        button4.tintColor = primary
+        barName.textColor = primary
+        barAddress.textColor = primary
+        
     }
 
     func getBarArray() -> NSArray {
@@ -143,8 +196,28 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) as UITableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) as! UITableViewCell
         cell.textLabel?.text = deals[indexPath.row] as? String
+        
+        // Change colors based on theme
+        switch(theme){
+            case 0: // Default
+                break;
+            case 1: // Ames
+                cell.textLabel?.textColor = primary
+                break;
+            case 2: // Iowa City
+                cell.textLabel?.textColor = primary
+                tableView.backgroundColor = secondary
+                cell.backgroundColor = secondary
+                break;
+            case 3: // Cedar Falls
+                cell.textLabel?.textColor = primary
+                break;
+            default:
+                break;
+        }
+        
         return cell
     }
     
@@ -180,54 +253,79 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
         tableView.reloadData()
     }
 
-    @IBAction func goToWebsite(sender: AnyObject) {
-        var url:NSURL = NSURL(string: self.website)!
-        UIApplication.sharedApplication().openURL(url)
-    }
-    
     @IBAction func callBar(sender: AnyObject) {
         
-        var alertController = UIAlertController()
+        var alertView = UIAlertView()
         
         if(self.number == "No Number"){
-            alertController = UIAlertController(title: "We're sorry!", message: "This bar doesn't have a phone.", preferredStyle: .Alert)
-            
-            var cancelAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel) {
-                UIAlertAction in
-                
-            }
-            alertController.addAction(cancelAction)
+            alertView = UIAlertView(
+                title: "We're sorry!",
+                message: "This bar doesn't have a phone.",
+                delegate: self,
+                cancelButtonTitle: "Cancel")
         }
             
         else{
-            alertController = UIAlertController(title: "Are you sure you want to call \(self.number)?", message: "", preferredStyle: .Alert)
-            
-            var okAction = UIAlertAction(title: "Call", style: UIAlertActionStyle.Default) {
-                UIAlertAction in
-                var url:NSURL = NSURL(string: "tel://\(self.number)")!
-                UIApplication.sharedApplication().openURL(url)
-            }
-            
-            var cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) {
-                UIAlertAction in
-                
-            }
-            
-            alertController.addAction(okAction)
-            alertController.addAction(cancelAction)
+            alertView = UIAlertView(
+                title: "Are you sure you want to call \(self.name)?",
+                message: self.number,
+                delegate: self,
+                cancelButtonTitle: "Cancel",
+                otherButtonTitles: "Call")
         }
+        
+        alertView.alertViewStyle = .Default
+        alertView.show()
 
-        self.presentViewController(alertController, animated: true, completion: nil)
+    }
+    
+    func alertView(alertView: UIAlertView, clickedButtonAtIndex buttonIndex: Int) {
+        switch buttonIndex {
+            case 0:
+                if(alertView.buttonTitleAtIndex(0) == "Cancel"){
+                    break;
+                }
+                else{
+                    var url:NSURL = NSURL(string: "tel://\(self.number)")!
+                    UIApplication.sharedApplication().openURL(url)
+                }
+                break;
+            case 1:
+                break;
+            default:
+                break;
+        }
     }
 
     @IBAction func createFavorite(sender: AnyObject) {
-        var alertController = UIAlertController(title: "We're sorry!", message: "Favorite bars will be coming in the next update.", preferredStyle: .Alert)
-        var cancelAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel) {
-            UIAlertAction in
+
+        if(selected){
+            toggleFavorite(false, save: false)
         }
-        alertController.addAction(cancelAction)
-        self.presentViewController(alertController, animated: true, completion: nil)
+        else{
+            toggleFavorite(true, save: true)
+        }
     }
+    
+    func toggleFavorite(isFavorite: Bool, save: Bool){
+        
+        if(isFavorite){
+            var selectedStar = UIImage(named: "star.png")
+            var newImg = scaleImage(selectedStar!, newSize: CGSize(width: 25.0, height: 25.0))
+            button3.setImage(newImg, forState: UIControlState.Normal)
+        }
+        else{
+            var selectedStar = UIImage(named: "star-50.png")
+            var newImg = scaleImage(selectedStar!, newSize: CGSize(width: 25.0, height: 25.0))
+            button3.setImage(newImg, forState: UIControlState.Normal)
+            coreDataHelper.deleteFavorite("Favorites", key: "list", barName: name)
+        }
+        if(save){
+            coreDataHelper.saveString("Favorites", value: name, key: "list")
+        }
+        
+    }
+    
     
     @IBAction func goToMaps(sender: AnyObject) {
         var formattedAddress = self.address.stringByReplacingOccurrencesOfString(" ", withString: "+", options: NSStringCompareOptions.LiteralSearch, range: nil)
@@ -260,6 +358,13 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource {
         UIGraphicsEndImageContext()
         
         return scaledImage
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "goToWebsite" {
+            var WS = segue.destinationViewController as! Website
+            WS.website = self.website
+        }
     }
     
     override func didReceiveMemoryWarning() {

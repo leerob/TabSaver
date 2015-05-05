@@ -22,6 +22,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     var amesArr = [] as NSArray
     var icArr = [] as NSArray
     var cfArr = [] as NSArray
+    var refreshControl = UIRefreshControl()
 
     // Bar Arrays
     var amesBars = [] as NSMutableArray
@@ -34,6 +35,11 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     var cedarFallsDeals: [(deal:String, bar:String, amount:Float)] = []
     var iowaCityDeals: [(deal:String, bar:String, amount:Float)] = []
     var barView = true
+    
+    var primary = UIColor()
+    var secondary = UIColor()
+    var colors = Colors()
+    var theme = 0;
     
 
     override func viewDidLoad() {
@@ -80,6 +86,57 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
         // Buffer the cell heights to prevent jumping
         setCellHeightArray()
         tableView.delegate = self
+        
+        // Add refresh control to table
+        refreshControl.backgroundColor = blue
+        refreshControl.tintColor = UIColor.whiteColor()
+        refreshControl.addTarget(self, action: Selector("refreshDistances"), forControlEvents: UIControlEvents.ValueChanged)
+        self.tableView.addSubview(refreshControl)
+        
+        // Testing changing themes
+        switch(theme){
+            case 0: // Default
+                break;
+            case 1: // Ames
+                primary = colors.red
+                secondary = colors.yellow3
+                changeTheme()
+                break;
+            case 2: // Iowa City
+                primary = colors.black
+                secondary = colors.yellow2
+                changeTheme()
+                break;
+            case 3: // Cedar Falls
+                primary = colors.purple
+                secondary = colors.yellow
+                changeTheme()
+                break;
+            default:
+                break;
+        }
+        
+    }
+
+    func refreshDistances() {
+        
+        setDistances(amesBars)
+        setDistances(cedarFallsBars)
+        setDistances(iowaCityBars)
+    
+        refreshControl.endRefreshing()
+        tableView.reloadData()
+    }
+    
+    func changeTheme(){
+
+        tableView.backgroundColor = primary
+        toolBar.backgroundColor = primary
+        segControl.backgroundColor = primary
+        segControl.tintColor = secondary
+        refreshControl.backgroundColor = primary
+        refreshControl.tintColor = secondary
+    
     }
     
     @IBAction func indexChanged(sender: UISegmentedControl) {
@@ -105,19 +162,23 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
         // Get day of the week
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE"
-        let dayOfWeekString = dateFormatter.stringFromDate(NSDate())
+        var currDate = NSDate()
+        var twoHours = 2 * 60 * 60 as NSTimeInterval
+        var newDate = currDate.dateByAddingTimeInterval(-twoHours)
+        let dayOfWeekString = dateFormatter.stringFromDate(newDate)
+
         
         // Loop through bars
         for(var i = 0; i < arr.count; i++){
             
-            var name = arr[i]["name"] as NSString
+            var name = arr[i]["name"] as! String
             
-            var dealsStr = arr[i][dayOfWeekString] as NSString
+            var dealsStr = arr[i][dayOfWeekString] as! NSString
             var dealsArr = dealsStr.componentsSeparatedByString(",")
             var deal = ""
             
             for (var i = 0; i < dealsArr.count; i++){
-                var curDeal = dealsArr[i] as String
+                var curDeal = dealsArr[i] as! String
                 var dealAmountArr = curDeal.componentsSeparatedByString(" ")
                 var formatter = NSNumberFormatter()
                 formatter.numberStyle = NSNumberFormatterStyle.CurrencyStyle
@@ -126,28 +187,28 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
                 
                 if(townName == "amesBars"){
-                    if(curDeal.rangeOfString("$") != nil){
-                        amesDeals.append(deal: dealsArr[i] as String, bar: name as String, amount: amt as Float)
+                    if(curDeal.rangeOfString("$") != nil && amt != nil){
+                        amesDeals.append(deal: dealsArr[i] as! String, bar: name as String, amount: amt as Float)
                     }
                 }
                 else if(townName == "cedarFallsBars"){
-                    if(curDeal.rangeOfString("$") != nil){
-                        cedarFallsDeals.append(deal: dealsArr[i] as String, bar: name as String, amount: amt as Float)
+                    if(curDeal.rangeOfString("$") != nil && amt != nil){
+                        cedarFallsDeals.append(deal: dealsArr[i] as! String, bar: name as String, amount: amt as Float)
                     }
                 }
                 else{
-                    if(curDeal.rangeOfString("$") != nil){
-                        iowaCityDeals.append(deal: dealsArr[i] as String, bar: name as String, amount: amt as Float)
+                    if(curDeal.rangeOfString("$") != nil && amt != nil){
+                        iowaCityDeals.append(deal: dealsArr[i] as! String, bar: name as String, amount: amt as Float)
                     }
                 }
                 
                 
                 deal += "\n"
-                deal += dealsArr[i] as NSString
+                deal += dealsArr[i] as! String
             }
             
-            var lat = arr[i]["lat"] as NSString
-            var long = arr[i]["long"] as NSString
+            var lat = arr[i]["lat"] as! NSString
+            var long = arr[i]["long"] as! NSString
             
             var negLong = -long.doubleValue
             
@@ -165,7 +226,16 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
                     newBar.town = ""
             }
             
-            bars.addObject(newBar)
+            // Support for settings
+//            if(deal == "\nNo Deals"){
+//                print(deal)
+//            }
+//            else if(deal == "\nClosed"){
+//                print(deal)
+//            }
+//            else{
+                bars.addObject(newBar)
+//            }
         }
         
         return bars
@@ -174,7 +244,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func setDistances(barArray: NSMutableArray){
         for bar in barArray {
             
-            let currentBar = bar as BarAnnotation
+            let currentBar = bar as! BarAnnotation
             if(locMan.location == nil){
                 currentBar.distance = 0
             }
@@ -186,8 +256,8 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     func sortBars(unsortedBars: NSMutableArray){
         unsortedBars.sortUsingComparator {
-            var one = $0 as BarAnnotation
-            var two = $1 as BarAnnotation
+            var one = $0 as! BarAnnotation
+            var two = $1 as! BarAnnotation
             var first = one.distance as Double
             var second = two.distance as Double
             
@@ -210,11 +280,11 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     }
 
     func orderOfTowns() -> NSArray{
-        var ames = amesBars[0] as BarAnnotation
+        var ames = amesBars[0] as! BarAnnotation
         ames.town = "Ames"
-        var cf = cedarFallsBars[0] as BarAnnotation
+        var cf = cedarFallsBars[0] as! BarAnnotation
         cf.town = "Cedar Falls"
-        var ic = iowaCityBars[0] as BarAnnotation
+        var ic = iowaCityBars[0] as! BarAnnotation
         ic.town = "Iowa City"
         
         var bars = [ames, cf, ic] as NSMutableArray
@@ -223,7 +293,8 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
         var townNames = ["", "", ""]
 
         for index in 0...2 {
-            townNames[index] = bars[index].town
+            var curBar = bars[index] as! BarAnnotation
+            townNames[index] = curBar.town
         }
         
         return townNames
@@ -246,14 +317,14 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
         var townArr = orderOfTowns()
         
         for town in townArr{
-            var arr = returnArray(town as NSString)
+            var arr = returnArray(town as! NSString)
             for bar in arr{
-                currentBar = bar as BarAnnotation
+                currentBar = bar as! BarAnnotation
                 var height = currentBar.cellHeight
-                if(town as NSString == "Ames"){
+                if(town as! NSString == "Ames"){
                     amesCellHeights.addObject(height)
                 }
-                else if(town as NSString == "Cedar Falls"){
+                else if(town as! NSString == "Cedar Falls"){
                     cfCellHeights.addObject(height)
                 }
                 else {
@@ -267,18 +338,44 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
         var cell = DealCell()
         
         if(barView){
-            cell = tableView.dequeueReusableCellWithIdentifier("Deal Cell", forIndexPath: indexPath) as DealCell
+            cell = tableView.dequeueReusableCellWithIdentifier("Deal Cell", forIndexPath: indexPath) as! DealCell
             
             var currentBar = BarAnnotation(latitude: 0, longitude: 0, name: "", deal: "")
             var townArr = orderOfTowns()
             
-            var town = townArr[indexPath.section] as NSString
+            var town = townArr[indexPath.section] as! NSString
             var arr = returnArray(town)
-            currentBar = arr[indexPath.row] as BarAnnotation
+            currentBar = arr[indexPath.row] as! BarAnnotation
             
             cell.barName.text = currentBar.name
             cell.deal.text = currentBar.deal
             cell.distanceToBar.text = String(format: "%.3f mi", currentBar.distance)
+            
+
+            // Change colors based on theme
+            switch(theme){
+                case 0: // Default
+                    break;
+                case 1: // Ames
+                    cell.barName.textColor = primary
+                    cell.deal.textColor = primary
+                    cell.distanceToBar.textColor = secondary
+                    cell.backgroundColor = colors.white
+                    break;
+                case 2: // Iowa City
+                    cell.barName.textColor = secondary
+                    cell.deal.textColor = secondary
+                    cell.distanceToBar.textColor = secondary
+                    cell.backgroundColor = primary
+                    break;
+                case 3: // Cedar Falls
+                    cell.barName.textColor = primary
+                    cell.deal.textColor = primary
+                    cell.distanceToBar.textColor = secondary
+                    break;
+                default:
+                    break;
+            }
             
             
             var len = CGFloat(cell.deal.text!.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet()).count - 1)
@@ -286,10 +383,10 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
             return cell
         }
         else{
-            var cell2 = tableView.dequeueReusableCellWithIdentifier("Deal Cell 2", forIndexPath: indexPath) as DealCell
+            var cell2 = tableView.dequeueReusableCellWithIdentifier("Deal Cell 2", forIndexPath: indexPath) as! DealCell
             
             var townArr = orderOfTowns()
-            var town = townArr[indexPath.section] as NSString
+            var town = townArr[indexPath.section] as! NSString
             
             
             if (town == "Ames"){
@@ -306,6 +403,29 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
             }
             
             cell2.distanceToBar.text = ""
+            
+            // Change colors based on theme
+            switch(theme){
+                case 0: // Default
+                    break;
+                case 1: // Ames
+                    cell2.barName.textColor = primary
+                    cell2.deal.textColor = primary
+                    cell2.backgroundColor = colors.white
+                    break;
+                case 2: // Iowa City
+                    cell2.barName.textColor = secondary
+                    cell2.deal.textColor = secondary
+                    cell2.backgroundColor = primary
+                    break;
+                case 3: // Cedar Falls
+                    cell2.barName.textColor = primary
+                    cell2.deal.textColor = primary
+                    break;
+                default:
+                    break;
+            }
+            
             return cell2;
         }
     }
@@ -314,16 +434,16 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
         if(barView){
             
             var townArr = orderOfTowns()
-            var town = townArr[indexPath.section] as NSString
+            var town = townArr[indexPath.section] as! NSString
             
             if (town == "Ames"){
-                return amesCellHeights[indexPath.row] as CGFloat
+                return amesCellHeights[indexPath.row] as! CGFloat
             }
             else if (town == "Cedar Falls"){
-                return cfCellHeights[indexPath.row] as CGFloat
+                return cfCellHeights[indexPath.row] as! CGFloat
             }
             else {
-                return icCellHeights[indexPath.row] as CGFloat
+                return icCellHeights[indexPath.row] as! CGFloat
             }
 
         }
@@ -336,16 +456,16 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
         if(barView){
             
             var townArr = orderOfTowns()
-            var town = townArr[indexPath.section] as NSString
+            var town = townArr[indexPath.section] as! NSString
             
             if (town == "Ames"){
-                return amesCellHeights[indexPath.row] as CGFloat
+                return amesCellHeights[indexPath.row] as! CGFloat
             }
             else if (town == "Cedar Falls"){
-                return cfCellHeights[indexPath.row] as CGFloat
+                return cfCellHeights[indexPath.row] as! CGFloat
             }
             else {
-                return icCellHeights[indexPath.row] as CGFloat
+                return icCellHeights[indexPath.row] as! CGFloat
             }
         }
         else{
@@ -359,7 +479,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         var townArr = orderOfTowns()
-        var town = townArr[section] as NSString
+        var town = townArr[section] as! NSString
         
         if(barView){
             var arr = returnArray(town)
@@ -381,13 +501,21 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
 
         var sectionHeaderView = UIView(frame: CGRectMake(0, 0, tableView.frame.size.width, 25.0))
-        sectionHeaderView.backgroundColor = UIColor.groupTableViewBackgroundColor()
-        
         var headerLabel = UILabel(frame: CGRectMake(16, 0, sectionHeaderView.frame.size.width, 25.0))
         headerLabel.backgroundColor = UIColor.clearColor()
-        headerLabel.textColor = UIColor.darkGrayColor()
+        
+        // Change colors based on theme
+        if(theme == 2){
+            sectionHeaderView.backgroundColor = colors.darkGray
+            headerLabel.textColor = colors.yellow2
+        }
+        else{
+            sectionHeaderView.backgroundColor = colors.lightGray
+            headerLabel.textColor = colors.darkGray
+        }
+
         var townArr = orderOfTowns()
-        var townString = townArr[section] as NSString
+        var townString = townArr[section] as! NSString
         headerLabel.text = townString.uppercaseString
         
         headerLabel.textAlignment = NSTextAlignment.Left
@@ -399,19 +527,19 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if(barView){
-            var cell = tableView.cellForRowAtIndexPath(indexPath) as DealCell
+            var cell = tableView.cellForRowAtIndexPath(indexPath) as! DealCell
             var name = cell.barName.text!
             detailName = name
         }
         else{
-            var cell = tableView.cellForRowAtIndexPath(indexPath) as DealCell
+            var cell = tableView.cellForRowAtIndexPath(indexPath) as! DealCell
             var name = cell.deal.text!
             detailName = name
         }
 
 
         var arr = orderOfTowns()
-        detailTown = arr[indexPath.section] as NSString
+        detailTown = arr[indexPath.section] as! String
         performSegueWithIdentifier("DetailFromList", sender: self)
 
     }
@@ -419,12 +547,13 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "DetailFromList" {
-            var BD = segue.destinationViewController as BarDetail
+            var BD = segue.destinationViewController as! BarDetail
             BD.detailName = detailName
             BD.detailTown = detailTown
             BD.amesArr = amesArr
             BD.icArr = icArr
             BD.cfArr = cfArr
+            BD.theme = theme
         }
     }
 
@@ -447,12 +576,12 @@ extension UINavigationBar {
     
     private func hairlineImageViewInNavigationBar(view: UIView) -> UIImageView? {
         if view.isKindOfClass(UIImageView) && view.bounds.height <= 1.0 {
-            return (view as UIImageView)
+            return (view as! UIImageView)
         }
         
-        let subviews = (view.subviews as [UIView])
+        let subviews = (view.subviews as! [UIView])
         for subview: UIView in subviews {
-            if let imageView: UIImageView = hairlineImageViewInNavigationBar(subview)? {
+            if let imageView: UIImageView = hairlineImageViewInNavigationBar(subview) {
                 return imageView
             }
         }
@@ -476,12 +605,12 @@ extension UIToolbar {
     
     private func hairlineImageViewInToolbar(view: UIView) -> UIImageView? {
         if view.isKindOfClass(UIImageView) && view.bounds.height <= 1.0 {
-            return (view as UIImageView)
+            return (view as! UIImageView)
         }
         
-        let subviews = (view.subviews as [UIView])
+        let subviews = (view.subviews as! [UIView])
         for subview: UIView in subviews {
-            if let imageView: UIImageView = hairlineImageViewInToolbar(subview)? {
+            if let imageView: UIImageView = hairlineImageViewInToolbar(subview) {
                 return imageView
             }
         }

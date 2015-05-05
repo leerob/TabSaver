@@ -12,13 +12,13 @@ class SegControl: UISegmentedControl {
 
     var current = 0
     
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
         current = self.selectedSegmentIndex
-        super.touchesBegan(touches, withEvent: event)
+        super.touchesBegan(touches as Set<NSObject>, withEvent: event)
     }
     
-    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
-        super.touchesEnded(touches, withEvent: event)
+    override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
+        super.touchesEnded(touches as Set<NSObject>, withEvent: event)
         
         if (current == self.selectedSegmentIndex){
             self.sendActionsForControlEvents(UIControlEvents.ValueChanged)

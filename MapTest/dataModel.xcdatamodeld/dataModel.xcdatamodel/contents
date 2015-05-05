@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14A389" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="Favorites" syncable="YES">
+        <attribute name="list" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Theme" representedClassName="MapTest.Theme" syncable="YES">
+        <attribute name="themeNumber" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+    </entity>
+    <entity name="User" syncable="YES">
+        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="rememberMe" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Favorites" positionX="-63" positionY="-9" width="128" height="60"/>
+        <element name="Theme" positionX="-63" positionY="-18" width="128" height="60"/>
+        <element name="User" positionX="-63" positionY="-9" width="128" height="90"/>
+    </elements>
+</model>

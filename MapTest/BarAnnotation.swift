@@ -19,6 +19,7 @@ class BarAnnotation: MKPointAnnotation {
     var town: String
     var cellHeight: CGFloat
     
+    
     init(latitude: Double, longitude: Double, name: String, deal: String) {
         self.latitude = latitude
         self.longitude = longitude
@@ -31,7 +32,7 @@ class BarAnnotation: MKPointAnnotation {
         self.loc = CLLocation(latitude: latitude, longitude: longitude)
         self.annotation = MKPointAnnotation()
         self.cellHeight = 0.0
-        annotation.setCoordinate(self.location)
+        annotation.coordinate = self.location
         annotation.title = name
         annotation.subtitle = deal
 

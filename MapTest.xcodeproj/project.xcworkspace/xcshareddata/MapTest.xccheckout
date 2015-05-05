@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>0B952C71-54DE-4EE3-AB5F-648481F32C01</string>
+	<key>IDESourceControlProjectName</key>
+	<string>MapTest</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>6094D9F4198D56F78EB1B455EC894F8A44DC0039</key>
+		<string>https://github.com/UrbanApps/Armchair.git</string>
+		<key>DD89BD95D3B9045A206C0ACB74D1F289E8679071</key>
+		<string>https://github.com/leerob/TabSaver.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>MapTest.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>6094D9F4198D56F78EB1B455EC894F8A44DC0039</key>
+		<string>../../Armchair</string>
+		<key>DD89BD95D3B9045A206C0ACB74D1F289E8679071</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/leerob/TabSaver.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>DD89BD95D3B9045A206C0ACB74D1F289E8679071</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>6094D9F4198D56F78EB1B455EC894F8A44DC0039</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Armchair</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>DD89BD95D3B9045A206C0ACB74D1F289E8679071</string>
+			<key>IDESourceControlWCCName</key>
+			<string>MapTest</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -10,14 +10,16 @@ import UIKit
 import MapKit
 import CoreLocation
 import Foundation
+import Armchair
 
-class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UISearchBarDelegate {
+class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UISearchBarDelegate, UIActionSheetDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var searchButton: UIBarButtonItem!
     @IBOutlet weak var listButton: UIBarButtonItem!
     @IBOutlet weak var segControl: UISegmentedControl!
     @IBOutlet weak var barButtonItem: UIBarButtonItem!
+    @IBOutlet weak var toolBar: UIToolbar!
     
     let locationManager = CLLocationManager()
     var searchBar = UISearchBar()
@@ -30,19 +32,33 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
     var cfArr = [] as NSArray
     var detailTown = ""
     
+    // Colors and Theme
+    var primary = UIColor()
+    var secondary = UIColor()
+    var colors = Colors()
+    var coreDataHelper = CoreDataHelper()
+    var theme = 0;
+    
     var tapRecognizer = UITapGestureRecognizer()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // For use in foreground
-        locationManager.requestWhenInUseAuthorization()
+        // i0S 8 Check
+        switch UIDevice.currentDevice().systemVersion.compare("8.0.0", options: NSStringCompareOptions.NumericSearch) {
+            case .OrderedSame, .OrderedDescending:
+                locationManager.requestWhenInUseAuthorization()
+                break;
+            default:
+                break;
+        }
 
         if CLLocationManager.locationServicesEnabled() {
             locationManager.delegate = self
             locationManager.desiredAccuracy = kCLLocationAccuracyBest
             locationManager.startUpdatingLocation()
         }
+        
 
         // Set the span and region for the map
         if(locationManager.location == nil){
@@ -66,9 +82,9 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
         var iowaCityBars = createBarArray("iowaCityBars", arr: icArr)
         
         // Add all the bars to one array
-        bars.addObjectsFromArray(amesBars)
-        bars.addObjectsFromArray(cedarFallsBars)
-        bars.addObjectsFromArray(iowaCityBars)
+        bars.addObjectsFromArray(amesBars as [AnyObject])
+        bars.addObjectsFromArray(cedarFallsBars as [AnyObject])
+        bars.addObjectsFromArray(iowaCityBars as [AnyObject])
         
         // Add bars to map
         for bar in bars {
@@ -84,9 +100,6 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
 
         
         // Add buttons
-        var blue = UIColor(red: 57.0/255.0, green: 105.0/255.0, blue: 247.0/255.0, alpha: 1.0)
-        searchBar.backgroundImage = getImageWithColor(blue, size: CGSize(width: 100, height: 50))
-        
         var bigimg = UIImage(named: "generic_sorting2-50.png")
         var img = scaleImage(bigimg!, newSize: CGSize(width: 25.0, height: 25.0))
         var button = UIBarButtonItem(image: img, style: UIBarButtonItemStyle.Plain, target: self, action: "goToList")
@@ -94,7 +107,7 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
         
         var bigimg2 = UIImage(named: "settings-50.png")
         var img2 = scaleImage(bigimg2!, newSize: CGSize(width: 20.0, height: 20.0))
-        var button2 = UIBarButtonItem(image: img2, style: UIBarButtonItemStyle.Plain, target: self, action: "createActionSheet")
+        var button2 = UIBarButtonItem(image: img2, style: UIBarButtonItemStyle.Plain, target: self, action: "goToSettings")
         self.navigationItem.leftBarButtonItem = button2
         
         navigationController?.navigationBar.hideBottomHairline()
@@ -102,21 +115,104 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
         var width = navigationController?.navigationBar.frame.width as CGFloat!
         
         switch(width){
-        case 320.0:
-            barButtonItem.width = width - 35.0
-            break
-        case 375.0:
-            barButtonItem.width = width - 32.0
-            break
-        case 414.0:
-            barButtonItem.width = width - 42.0
-            break
-        default:
-            barButtonItem.width = width - 35.0
+            case 320.0:
+                barButtonItem.width = width - 35.0
+                break
+            case 375.0:
+                barButtonItem.width = width - 32.0
+                break
+            case 414.0:
+                barButtonItem.width = width - 42.0
+                break
+            default:
+                barButtonItem.width = width - 35.0
+        }
+        
+        // Change colors based on theme
+        theme = coreDataHelper.getInt("Theme", key: "themeNumber")
+
+        switch(theme){
+            case 0: // Default
+                primary = colors.blue
+                secondary = colors.white
+                changeTheme()
+                break;
+            case 1: // Ames
+                primary = colors.red
+                secondary = colors.yellow3
+                changeTheme()
+                break;
+            case 2: // Iowa City
+                primary = colors.black
+                secondary = colors.yellow2
+                changeTheme()
+                break;
+            case 3: // Cedar Falls
+                primary = colors.purple
+                secondary = colors.yellow
+                changeTheme()
+                break;
+            default:
+                primary = colors.blue
+                secondary = colors.white
+                changeTheme()
+                break;
         }
         
     }
+    
+    override func viewDidAppear(animated: Bool) {
+        
+        // Change colors based on theme
+        theme = coreDataHelper.getInt("Theme", key: "themeNumber")
+        
+        switch(theme){
+            case 0: // Default
+                primary = colors.blue
+                secondary = colors.white
+                changeTheme()
+                break;
+            case 1: // Ames
+                primary = colors.red
+                secondary = colors.yellow3
+                changeTheme()
+                break;
+            case 2: // Iowa City
+                primary = colors.black
+                secondary = colors.yellow2
+                changeTheme()
+                break;
+            case 3: // Cedar Falls
+                primary = colors.purple
+                secondary = colors.yellow
+                changeTheme()
+                break;
+            default:
+                primary = colors.blue
+                secondary = colors.white
+                changeTheme()
+                break;
+        }
+    }
 
+
+    func changeTheme(){
+        
+        var navItem = navigationController?.navigationBar;
+        navItem?.barTintColor = primary
+        navItem?.tintColor = secondary
+        navItem?.backgroundColor = secondary
+        navItem?.titleTextAttributes = [NSForegroundColorAttributeName: secondary]
+        toolBar.backgroundColor = primary
+        segControl.backgroundColor = primary
+        segControl.tintColor = secondary
+        searchBar.backgroundImage = getImageWithColor(primary, size: CGSize(width: 100, height: 50))
+        navItem?.barStyle = UIBarStyle.Black
+        navItem?.translucent = false
+        
+    }
+    
+    
     func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
         tapRecognizer = UITapGestureRecognizer(target: self, action: "handleSingleTap:")
         tapRecognizer.numberOfTapsRequired = 1
@@ -144,50 +240,8 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
         performSegueWithIdentifier("List", sender: self)
     }
     
-    func createActionSheet(){
-        
-        let optionMenu = UIAlertController(title: nil, message: "Settings", preferredStyle: .ActionSheet)
-        
-        // Create Actions
-        let toggleLoc = UIAlertAction(title: "Turn Location On/Off", style: .Default, handler: {
-            (alert: UIAlertAction!) -> Void in
-            
-            if (UIApplicationOpenSettingsURLString != nil){
-                var settingsApp = NSURL(string: UIApplicationOpenSettingsURLString)
-                UIApplication.sharedApplication().openURL(settingsApp!)
-            }
-        })
-        let showFavs = UIAlertAction(title: "Show Favorites", style: .Default, handler: {
-            (alert: UIAlertAction!) -> Void in
-            
-            let alert = UIAlertView()
-            alert.title = "Sorry!"
-            alert.message = "Adding your favorite bars will be here soon. Look for an update soon."
-            alert.addButtonWithTitle("OK")
-            alert.show()
-        })
-        let contactUs = UIAlertAction(title: "Contact Us", style: .Default, handler: {
-            (alert: UIAlertAction!) -> Void in
-            
-            var url:NSURL = NSURL(string: "http://www.tabsaverapp.com")!
-            UIApplication.sharedApplication().openURL(url)
-        })
-
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
-            (alert: UIAlertAction!) -> Void in
-            // Do something
-        })
-        
-        
-        // Add actions to menu
-        optionMenu.addAction(contactUs)
-        optionMenu.addAction(showFavs)
-        optionMenu.addAction(toggleLoc)
-        optionMenu.addAction(cancelAction)
-        
-        // Show menu
-        self.presentViewController(optionMenu, animated: true, completion: nil)
-        
+    func goToSettings(){
+        performSegueWithIdentifier("Settings", sender: self)
     }
     
     @IBAction func goToCurrentLoc(sender: AnyObject) {
@@ -209,11 +263,14 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
         switch segControl.selectedSegmentIndex
         {
             case 0:
-                self.selectLocation(42.035021, long: -93.645)
+                self.selectLocation(42.035021, long: -93.645)  
+                break;
             case 1:
                 self.selectLocation(41.656497, long: -91.535339)
+                break;
             default:
                 self.selectLocation(42.520700, long: -92.438965)
+                break;
         }
     }
     
@@ -230,19 +287,23 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
         // Get day of the week
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE"
-        let dayOfWeekString = dateFormatter.stringFromDate(NSDate())
+        var currDate = NSDate()
+        var twoHours = 2 * 60 * 60 as NSTimeInterval
+        var newDate = currDate.dateByAddingTimeInterval(-twoHours)
+        
+        let dayOfWeekString = dateFormatter.stringFromDate(newDate)
         
         // Loop through bars
         for(var i = 0; i < arr.count; i++){
             
-            var name = arr[i]["name"] as NSString
+            var name = arr[i]["name"] as! String
 
-            var dealsStr = arr[i][dayOfWeekString] as NSString
+            var dealsStr = arr[i][dayOfWeekString] as! String
             var dealsArr = dealsStr.componentsSeparatedByString(",")
 
-            var deal = dealsArr[0] as NSString
-            var lat = arr[i]["lat"] as NSString
-            var long = arr[i]["long"] as NSString
+            var deal = dealsArr[0] as String
+            var lat = arr[i]["lat"] as! NSString
+            var long = arr[i]["long"] as! NSString
             
             var negLong = -long.doubleValue
             
@@ -259,7 +320,14 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
                     newBar.town = ""
             }
             
-            bars.addObject(newBar)
+            
+            // Support for settings
+//            if(deal == "No Deals" || deal == "Closed"){
+//                print(deal)
+//            }
+//            else{
+                bars.addObject(newBar)
+//            }
         }
 
         return bars
@@ -311,38 +379,32 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
 
     func parseJSON(inputData: NSData) -> Array<NSDictionary>{
         var error: NSError?
-        var arr = NSJSONSerialization.JSONObjectWithData(inputData, options: NSJSONReadingOptions.MutableContainers, error: &error) as Array<NSDictionary>
+        var arr = NSJSONSerialization.JSONObjectWithData(inputData, options: NSJSONReadingOptions.MutableContainers, error: &error) as! Array<NSDictionary>
         
         return arr
     }
-    
-    override func viewWillAppear(animated: Bool) {
-        
-        // Configure Nav Bar
-        super.viewWillAppear(animated)
-        var nav = self.navigationController?.navigationBar
-        nav?.barStyle = UIBarStyle.Black
-        nav?.tintColor = UIColor.whiteColor()
-        
-        var blue = UIColor(red: 57.0/255.0, green: 105.0/255.0, blue: 247.0/255.0, alpha: 1.0)
-        
-        nav?.barTintColor = blue
-        nav?.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
-        navigationController?.navigationBar.translucent = false
 
-    }
-    
-    func searchBarSearchButtonClicked( searchBar: UISearchBar!)
+    func searchBarSearchButtonClicked( searchBar: UISearchBar)
     {
+        self.view.removeGestureRecognizer(tapRecognizer)
         var found = false
         for bar in bars {
             var barName = bar.name.stringByReplacingOccurrencesOfString("\'", withString: "", options: NSStringCompareOptions.LiteralSearch, range: nil)
             var searchString = searchBar.text.stringByReplacingOccurrencesOfString("\'", withString: "", options: NSStringCompareOptions.LiteralSearch, range: nil)
             
-            var test = bar as BarAnnotation
+            var test = bar as! BarAnnotation
             if barName.rangeOfString(searchString) != nil || barName.lowercaseString.rangeOfString(searchString.lowercaseString) != nil {
                 found = true
                 searchBar.resignFirstResponder()
+                if(test.town == "Ames"){
+                    segControl.selectedSegmentIndex = 0
+                }
+                else if(test.town == "Iowa City"){
+                    segControl.selectedSegmentIndex = 1
+                }
+                else{
+                    segControl.selectedSegmentIndex = 2
+                }
                 var span = MKCoordinateSpanMake(0.005, 0.005)
                 var region = MKCoordinateRegion(center: test.location, span: span)
                 mapView.setRegion(region, animated: true)
@@ -386,7 +448,7 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
             pinView!.leftCalloutAccessoryView = mugIconView
             
             // Add detail button to right callout
-            var calloutButton = UIButton.buttonWithType(.DetailDisclosure) as UIButton
+            var calloutButton = UIButton.buttonWithType(.DetailDisclosure) as! UIButton
             calloutButton.tintColor = UIColor.blackColor()
             pinView!.rightCalloutAccessoryView = calloutButton
         }
@@ -428,7 +490,8 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
             detailName = annotationView.annotation.title!
             for bar in bars{
                 if bar.name == detailName{
-                    detailTown = bar.town
+                    var curBar = bar as! BarAnnotation
+                    detailTown = curBar.town
                 }
             }
             performSegueWithIdentifier("Detail", sender: self)
@@ -437,20 +500,22 @@ class BarMap: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UI
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "Detail" {
-            var BD = segue.destinationViewController as BarDetail
+            var BD = segue.destinationViewController as! BarDetail
             BD.detailName = detailName
             BD.amesArr = amesArr
             BD.cfArr = cfArr
             BD.icArr = icArr
             BD.detailTown = detailTown
+            BD.theme = theme
 
         }
         
         if segue.identifier == "List" {
-            var DD = segue.destinationViewController as DailyDeals
+            var DD = segue.destinationViewController as! DailyDeals
             DD.amesArr = amesArr
             DD.cfArr = cfArr
             DD.icArr = icArr
+            DD.theme = theme
         }
         self.view.removeGestureRecognizer(tapRecognizer)
     }
