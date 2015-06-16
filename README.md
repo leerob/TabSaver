@@ -5,7 +5,7 @@ TabSaver
 )](https://developer.apple.com/swift/)
 [![Platform](https://img.shields.io/badge/platform-iOS-brightgreen.svg?style=flat
 )](https://www.apple.com/ios/)
-[![Release](https://img.shields.io/badge/release-v1.1-orange.svg?style=flat
+[![Release](https://img.shields.io/badge/release-v1.2-orange.svg?style=flat
 )](http://www.tabsaverapp.com)
 
 About
@@ -25,6 +25,6 @@ Contact
 ----
 Thanks for checking out TabSaver and I hope you enjoy it! Feel free to contact me.
 
-- v1.1 released 2/28/2015
+- v1.2 released 6/1/2015
 - Created by Lee Robinson at Iowa State Univeristy.
 - leerob@iastate.edu
