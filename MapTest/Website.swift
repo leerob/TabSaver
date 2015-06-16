@@ -33,7 +33,7 @@ class Website: UIViewController, UIActionSheetDelegate {
 
     @IBAction func showOptions(sender: AnyObject) {
         // Create action sheet
-        var actionSheet = UIActionSheet(title: nil, delegate: self, cancelButtonTitle: nil, destructiveButtonTitle: nil)
+        let actionSheet = UIActionSheet(title: nil, delegate: self, cancelButtonTitle: nil, destructiveButtonTitle: nil)
         actionSheet.addButtonWithTitle("Copy Link")
         actionSheet.addButtonWithTitle("Open in Safari")
         actionSheet.addButtonWithTitle("Cancel")
@@ -58,5 +58,4 @@ class Website: UIViewController, UIActionSheetDelegate {
                 break;
         }
     }
-    
 }

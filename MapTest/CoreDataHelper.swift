@@ -30,7 +30,7 @@ class CoreDataHelper{
         }
         
     }
-
+    
 
     func saveString(entityName: String, value: String, key: String) {
         
@@ -62,12 +62,19 @@ class CoreDataHelper{
         }
         
         if(resultArr.capacity  != 0){
-            return resultArr[resultArr.count-1].valueForKey(key) as! Int
+
+            if((resultArr[resultArr.count-1].valueForKey(key)) != nil){
+                return resultArr[resultArr.count-1].valueForKey(key) as! Int
+            }
+            else{
+                return 0
+            }
         }
         else{
             return 0
         }
     }
+
 
     func getString(entityName: String, key: String) -> String {
 

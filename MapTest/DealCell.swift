@@ -13,8 +13,8 @@ class DealCell: UITableViewCell {
     @IBOutlet weak var barName: UILabel!
     @IBOutlet weak var deal: UILabel!
     @IBOutlet weak var distanceToBar: UILabel!
-    var height = 1
-    
+    @IBOutlet weak var barImage: UIImageView!
+
     override func awakeFromNib() {
         super.awakeFromNib()
     }
@@ -22,5 +22,4 @@ class DealCell: UITableViewCell {
     override func setSelected(selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
-
 }

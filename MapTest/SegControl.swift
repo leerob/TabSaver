@@ -20,9 +20,8 @@ class SegControl: UISegmentedControl {
     override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
         super.touchesEnded(touches as Set<NSObject>, withEvent: event)
         
-        if (current == self.selectedSegmentIndex){
+        if current == self.selectedSegmentIndex {
             self.sendActionsForControlEvents(UIControlEvents.ValueChanged)
         }
     }
-
 }

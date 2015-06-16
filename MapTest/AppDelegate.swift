@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     override class func initialize(){
         Armchair.appID("958415829")
-        Armchair.debugEnabled(true)
+        //Armchair.debugEnabled(true)
         Armchair.significantEventsUntilPrompt(1)
     }
 
@@ -36,10 +36,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             application.registerUserNotificationSettings(settings)
             application.registerForRemoteNotifications()
             
-        } else {
-            // Register for Push Notifications before iOS 8
-            application.registerForRemoteNotificationTypes(.Alert | .Badge | .Sound)
         }
+//        else {
+//            // Register for Push Notifications before iOS 8
+//            application.registerForRemoteNotificationTypes(.Alert | .Badge | .Sound)
+//        }
+        
+        // Set segmented control font
+        var attr = NSDictionary(object: UIFont(name: "San Francisco Display", size: 12.0)!, forKey: NSFontAttributeName)
+        UISegmentedControl.appearance().setTitleTextAttributes(attr as [NSObject : AnyObject], forState: .Normal)
         
 
         return true

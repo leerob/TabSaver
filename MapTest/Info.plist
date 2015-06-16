@@ -15,11 +15,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>2.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>4</string>
+	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -31,6 +31,13 @@
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>System San Francisco Display Medium.ttf</string>
+		<string>System San Francisco Display Regular.ttf</string>
+		<string>System San Francisco Display Thin.ttf</string>
+		<string>System San Francisco Display Ultralight.ttf</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

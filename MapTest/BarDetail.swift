@@ -8,36 +8,46 @@
 
 import UIKit
 import CoreData
+import Parse
+import MapKit
+import MessageUI
 
-class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate {
+
+class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, UIScrollViewDelegate, MFMailComposeViewControllerDelegate {
 
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var barName: UILabel!
     @IBOutlet weak var barAddress: UILabel!
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var segControl: UISegmentedControl!
-    @IBOutlet weak var button: UIButton!
-    @IBOutlet weak var button2: UIButton!
-    @IBOutlet weak var button3: UIButton!
-    @IBOutlet weak var button4: UIButton!
+    @IBOutlet weak var distanceToBar: UILabel!
+    @IBOutlet weak var dailyDeals: UILabel!
+    @IBOutlet weak var number: UILabel!
+    @IBOutlet weak var website: UILabel!
+    @IBOutlet weak var address: UILabel!
+    @IBOutlet weak var mapView: MKMapView!
+ 
+    // Static labels
+    @IBOutlet weak var dailyDealsLabel: UILabel!
+    @IBOutlet weak var phoneLabel: UILabel!
+    @IBOutlet weak var websiteLabel: UILabel!
+    @IBOutlet weak var locationLabel: UILabel!
+    @IBOutlet weak var yelpLabel: UILabel!
+    @IBOutlet weak var foursquareLabel: UILabel!
+    @IBOutlet weak var problemLabel: UILabel!
     
     var name = ""
-    var address = ""
-    var number = ""
-    var website = ""
-    var sundayDeals = []
-    var mondayDeals = []
-    var tuesdayDeals = []
-    var wednesdayDeals = []
-    var thursdayDeals = []
-    var fridayDeals = []
-    var saturdayDeals = []
+    var rawNumber: NSString = ""
+    var sun = ""
+    var mon = ""
+    var tue = ""
+    var wed = ""
+    var thu = ""
+    var fri = ""
+    var sat = ""
     
-    var detailName = ""
     var detailTown = ""
-    var amesArr = [] as NSArray
-    var icArr = [] as NSArray
-    var cfArr = [] as NSArray
+    var detailName = ""
+    var distance = ""
+    var barsArr = [] as NSArray
     var deals = []
     var selected = false
     
@@ -46,260 +56,283 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     var colors = Colors()
     var coreDataHelper = CoreDataHelper()
     var theme = 0
-
+    var ImagesDict = Dictionary<String, NSData>()
+    
+    let tableHeaderHeight: CGFloat = 100.0
+    var headerView: UIView!
+    var gradient: CAGradientLayer = CAGradientLayer()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        var arr = getBarArray()
-
-        for(var i = 0; i < arr.count; i++){
+        for(var i = 0; i < barsArr.count; i++) {
             
-            var barName = arr[i]["name"] as! String
-            
+            let barName = barsArr[i]["name"] as! String
             if barName == detailName {
-                var sun = arr[i]["Sunday"] as! NSString
-                sundayDeals = sun.componentsSeparatedByString(",")
-                var mon = arr[i]["Monday"] as! NSString
-                mondayDeals = mon.componentsSeparatedByString(",")
-                var tue = arr[i]["Tuesday"] as! NSString
-                tuesdayDeals = tue.componentsSeparatedByString(",")
-                var wed = arr[i]["Wednesday"] as! NSString
-                wednesdayDeals = wed.componentsSeparatedByString(",")
-                var thur = arr[i]["Thursday"] as! NSString
-                thursdayDeals = thur.componentsSeparatedByString(",")
-                var fri = arr[i]["Friday"] as! NSString
-                fridayDeals = fri.componentsSeparatedByString(",")
-                var sat = arr[i]["Saturday"] as! NSString
-                saturdayDeals = sat.componentsSeparatedByString(",")
-                address = arr[i]["address"] as! String
-                number = arr[i]["number"] as! String
-                website = arr[i]["website"] as! String
+                // Retrieve selected bars information
+                sun = barsArr[i]["Sunday"] as! String
+                mon = barsArr[i]["Monday"] as! String
+                tue = barsArr[i]["Tuesday"] as! String
+                wed = barsArr[i]["Wednesday"] as! String
+                thu = barsArr[i]["Thursday"] as! String
+                fri = barsArr[i]["Friday"] as! String
+                sat = barsArr[i]["Saturday"] as! String
+                address.text = barsArr[i]["address"] as? String
+                address.text = address.text! + "\n" + detailTown + ", IA"
+                website.text = barsArr[i]["website"] as? String
                 name = barName
+                rawNumber = barsArr[i]["number"] as! NSString
+                
+                if rawNumber == "No Number" {
+                    number.text = rawNumber as? String
+                }
+                else{
+                    number.text = formatPhoneNumber(rawNumber) as? String
+                }
+                
+                let span = MKCoordinateSpanMake(0.005, 0.005)
+                let lat = barsArr[i]["lat"] as! NSString
+                let long = barsArr[i]["long"] as! NSString
+                let negLong = -long.doubleValue
+                let loc = CLLocationCoordinate2D(latitude: lat.doubleValue, longitude: negLong)
+                let region = MKCoordinateRegion(center: loc, span: span)
+                mapView.setRegion(region, animated: false)
+                mapView.addAnnotation(BarAnnotation(latitude: lat.doubleValue, longitude: negLong, name: name, deal: "").annotation)
             }
         }
         
-        // Get day of the week
+        // Set image from dictionary
+        image.image = UIImage(data: ImagesDict[name]!)
+        
+        // Get day of the week + 2 hours
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE"
-        var currDate = NSDate()
-        var twoHours = 2 * 60 * 60 as NSTimeInterval
-        var newDate = currDate.dateByAddingTimeInterval(-twoHours)
+        let currDate = NSDate()
+        let twoHours = 2 * 60 * 60 as NSTimeInterval
+        let newDate = currDate.dateByAddingTimeInterval(-twoHours)
         let dayOfWeekString = dateFormatter.stringFromDate(newDate)
-        setSeg(dayOfWeekString)
         
+        dailyDeals.text = getDailyDealStr(dayOfWeekString).replace(",", withString: ", ")
         barName.text = name
-        barAddress.text = address
-        var blue = UIColor(red: 57.0/255.0, green: 105.0/255.0, blue: 247.0/255.0, alpha: 1.0)
-        segControl.tintColor = blue
+        distanceToBar.text = distance + " miles"
         
-        var phone = UIImage(named: "phone1-50.png")
-        var img = scaleImage(phone!, newSize: CGSize(width: 25.0, height: 25.0))
-        button.setImage(img, forState: UIControlState.Normal)
-        
-        var globe = UIImage(named: "globe-50.png")
-        var img2 = scaleImage(globe!, newSize: CGSize(width: 25.0, height: 25.0))
-        button2.setImage(img2, forState: UIControlState.Normal)
-        
-        var star = UIImage(named: "star-50.png")
-        var img3 = scaleImage(star!, newSize: CGSize(width: 25.0, height: 25.0))
-        button3.setImage(img3, forState: UIControlState.Normal)
-        
-        var loc = UIImage(named: "location-50.png")
-        var img4 = scaleImage(loc!, newSize: CGSize(width: 25.0, height: 25.0))
-        button4.setImage(img4, forState: UIControlState.Normal)
+        // Add button
+        var bigimg = UIImage(named: "star-50.png")
+        var img = scaleImage(bigimg!, newSize: CGSize(width: 25.0, height: 25.0))
+        var button = UIBarButtonItem(image: img, style: UIBarButtonItemStyle.Plain, target: self, action: "createFavorite")
+        self.navigationItem.rightBarButtonItem = button
+
         
         // Change colors based on theme
-        switch(theme){
-            case 0: // Default
-                break;
-            case 1: // Ames
-                primary = colors.red
-                secondary = colors.yellow3
-                changeTheme()
-                break;
-            case 2: // Iowa City
-                primary = colors.yellow2
-                secondary = colors.black
-                self.view.backgroundColor = secondary
-                changeTheme()
-                break;
-            case 3: // Cedar Falls
-                primary = colors.purple
-                secondary = colors.yellow
-                changeTheme()
-                break;
-            default:
-                break;
+        if theme == 2 {
+            primary = colors.darkGray
         }
+        
+        changeTheme()
 
         if(coreDataHelper.isFavorite("Favorites", key: "list", barName: name)){
             toggleFavorite(true, save: false)
             selected = true
         }
+        
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItemStyle.Plain, target: self, action: nil)
+        navigationController?.navigationBar.titleTextAttributes = [ NSFontAttributeName: UIFont(name: "San Francisco Display", size: 16)!]
+    
+        // Create a black->transparent gradient over image
+        gradient.frame = CGRectMake(0.0, 0.0, view.frame.width, view.frame.height)
+        gradient.colors = [colors.transparentBlack.CGColor, colors.black.CGColor]
+        gradient.locations = [0.0, 1.0]
+        gradient.startPoint = CGPoint(x: 1.0, y: 0.0)
+        gradient.endPoint = CGPoint(x: 0.0, y: 0.0)
+        image!.layer.insertSublayer(gradient, atIndex:0)
+        
+        // Create a white->transparent gradient over map
+        var mapGradient: CAGradientLayer = CAGradientLayer()
+        mapGradient.frame = CGRectMake(0.0, 0.0, mapView.frame.width, mapView.frame.height+10)
+        mapGradient.colors = [colors.transparentWhite.CGColor, colors.white.CGColor]
+        mapGradient.locations = [0.0, 1.0]
+        mapGradient.startPoint = CGPoint(x: 1.0, y: 0.0)
+        mapGradient.endPoint = CGPoint(x: 0.5, y: 0.0)
+        mapView.layer.insertSublayer(mapGradient, above: mapView.layer)
 
+        // Set a tap recognizer for clicking the map
+        var tapRecognizer = UITapGestureRecognizer()
+        tapRecognizer = UITapGestureRecognizer(target: self, action: "goToMaps")
+        tapRecognizer.numberOfTapsRequired = 1
+        mapView.addGestureRecognizer(tapRecognizer)
+        
+        // Create the table image header
+        headerView = tableView.tableHeaderView
+        tableView.tableHeaderView = nil
+        tableView.addSubview(headerView)
+        tableView.contentInset = UIEdgeInsets(top: tableHeaderHeight, left: 0, bottom: 0, right: 0)
+        tableView.contentOffset = CGPoint(x: 0, y: -tableHeaderHeight)
+        tableView.tableFooterView = UIView(frame:CGRectZero)
     }
     
-    func changeTheme(){
-        
-        segControl.tintColor = primary
-        button.tintColor = primary
-        button2.tintColor = primary
-        button3.tintColor = primary
-        button4.tintColor = primary
-        barName.textColor = primary
-        barAddress.textColor = primary
-        
-    }
-
-    func getBarArray() -> NSArray {
-        switch(detailTown){
-            case "Ames":
-                return amesArr
-            case "Cedar Falls":
-                return cfArr
-            case "Iowa City":
-                return icArr
-            default:
-                return amesArr
-        }
-    }
-    
-    func setSeg(dayOfWeek: String) {
+    func getDailyDealStr(dayOfWeek: String) -> String {
         
         switch dayOfWeek
         {
             case "Sunday":
-                segControl.selectedSegmentIndex = 0
-                deals = sundayDeals
+                return sun
             case "Monday":
-                segControl.selectedSegmentIndex = 1
-                deals = mondayDeals
+                return mon
             case "Tuesday":
-                segControl.selectedSegmentIndex = 2
-                deals = tuesdayDeals
+                return tue
             case "Wednesday":
-                segControl.selectedSegmentIndex = 3
-                deals = wednesdayDeals
+                return wed
             case "Thursday":
-                segControl.selectedSegmentIndex = 4
-                deals = thursdayDeals
+                return thu
             case "Friday":
-                segControl.selectedSegmentIndex = 5
-                deals = fridayDeals
+                return fri
             case "Saturday":
-                segControl.selectedSegmentIndex = 6
-                deals = saturdayDeals
+                return sat
             default:
-                break;
+                return ""
         }
-    }
-
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) as! UITableViewCell
-        cell.textLabel?.text = deals[indexPath.row] as? String
-        
-        // Change colors based on theme
-        switch(theme){
-            case 0: // Default
-                break;
-            case 1: // Ames
-                cell.textLabel?.textColor = primary
-                break;
-            case 2: // Iowa City
-                cell.textLabel?.textColor = primary
-                tableView.backgroundColor = secondary
-                cell.backgroundColor = secondary
-                break;
-            case 3: // Cedar Falls
-                cell.textLabel?.textColor = primary
-                break;
-            default:
-                break;
-        }
-        
-        return cell
     }
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
+    func updateHeaderView() {
+        
+        var gradientRect = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: tableHeaderHeight)
+        var headerRect = CGRect(x: 0, y: -tableHeaderHeight, width: tableView.bounds.width, height: tableHeaderHeight)
+        
+        if tableView.contentOffset.y < -tableHeaderHeight {
+            headerRect.origin.y = tableView.contentOffset.y
+            headerRect.size.height = -tableView.contentOffset.y
+            gradientRect.origin.x = tableView.contentOffset.y
+            gradientRect.size.height = -tableView.contentOffset.y+150
+        }
+       
+        gradient.frame = gradientRect
+        headerView.frame = headerRect
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return deals.count
+    override func scrollViewDidScroll(scrollView: UIScrollView) {
+        updateHeaderView()
     }
 
-    @IBAction func indexChanged(sender: UISegmentedControl) {
-        
-        switch segControl.selectedSegmentIndex
-        {
-            case 0:
-                deals = sundayDeals
-            case 1:
-                deals = mondayDeals
-            case 2:
-                deals = tuesdayDeals
-            case 3:
-                deals = wednesdayDeals
-            case 4:
-                deals = thursdayDeals
-            case 5:
-                deals = fridayDeals
-            case 6:
-                deals = saturdayDeals
-            default:
-                break;
-        }
-        tableView.reloadData()
-    }
+    func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) -> MKAnnotationView! {
 
-    @IBAction func callBar(sender: AnyObject) {
+        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier("pin")
         
-        var alertView = UIAlertView()
-        
-        if(self.number == "No Number"){
-            alertView = UIAlertView(
-                title: "We're sorry!",
-                message: "This bar doesn't have a phone.",
-                delegate: self,
-                cancelButtonTitle: "Cancel")
-        }
+        if pinView == nil {
+            pinView = MKAnnotationView(annotation: annotation, reuseIdentifier: "pin")
+            pinView!.canShowCallout = false
             
-        else{
-            alertView = UIAlertView(
-                title: "Are you sure you want to call \(self.name)?",
-                message: self.number,
-                delegate: self,
-                cancelButtonTitle: "Cancel",
-                otherButtonTitles: "Call")
         }
-        
-        alertView.alertViewStyle = .Default
-        alertView.show()
+        else {
+            pinView!.annotation = annotation
+        }
 
+        pinView!.image = scaleImage(UIImage(named: "transparent.png")!, newSize: CGSizeMake(35, 35))
+        pinView!.centerOffset = CGPointMake(tableView.frame.width/2 - 35, 0)
+ 
+        return pinView
+    }
+
+    func changeTheme() {
+        dailyDealsLabel.textColor = primary
+        phoneLabel.textColor = primary
+        websiteLabel.textColor = primary
+        locationLabel.textColor = primary
+        yelpLabel.textColor = primary
+        foursquareLabel.textColor = primary
+        problemLabel.textColor = primary
+    }
+   
+    func formatPhoneNumber(number: NSString) -> NSString {
+    
+        var newStr = NSMutableString(string: number)
+        newStr.insertString("(", atIndex: 0)
+        newStr.insertString(")", atIndex: 4)
+        newStr.insertString(" ", atIndex: 5)
+        newStr.insertString("-", atIndex: 9)
+        return newStr
     }
     
-    func alertView(alertView: UIAlertView, clickedButtonAtIndex buttonIndex: Int) {
-        switch buttonIndex {
-            case 0:
-                if(alertView.buttonTitleAtIndex(0) == "Cancel"){
-                    break;
-                }
-                else{
-                    var url:NSURL = NSURL(string: "tel://\(self.number)")!
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        
+        switch indexPath.row {
+            case 1:
+                if rawNumber != "No Number" {
+                    let url:NSURL = NSURL(string: "tel://\(rawNumber)")!
                     UIApplication.sharedApplication().openURL(url)
                 }
                 break;
-            case 1:
+            case 2:
+                performSegueWithIdentifier("goToWebsite", sender: self)
+                break;
+            case 4:
+                let yelpStr = "search?terms=" + name.replace(" ", withString: "+") + "&location=" + detailTown.replace(" ", withString: "+") + ",IA"
+                if isYelpInstalled() {
+                    // Call into the Yelp app
+                    UIApplication.sharedApplication().openURL(NSURL(string: "yelp5.3:///" + yelpStr)!)
+                }
+                else {
+                    // Use the website
+                    let urlStr = name.replace(" ", withString: "+") + "&find_loc=" + detailTown.replace(" ", withString: "+") + ",IA"
+                    UIApplication.sharedApplication().openURL(NSURL(string: "http://www.yelp.com/search?find_desc=" + urlStr)!)
+                }
+            case 5:
+                if isFoursquareInstalled() {
+                    // Call into the Foursquare app
+                    // Make GET request to https://api.foursquare.com/v2/venues/search?ll=42.5,-92.4&query=beck's
+                    // Get ID from response and append to url string
+                    
+                    UIApplication.sharedApplication().openURL(NSURL(string: "foursquare://venues/" + "INSERT ID HERE")!)
+                }
+                else {
+                    // Use the website
+                    UIApplication.sharedApplication().openURL(NSURL(string: "https://foursquare.com/v/" + "INSERT ID HERE")!)
+                }
+            case 6:
+                // Report a problem
+                let mailComposeViewController = configuredMailComposeViewController()
+                if MFMailComposeViewController.canSendMail() {
+                    self.presentViewController(mailComposeViewController, animated: true, completion: nil)
+                } else {
+                    self.showSendMailErrorAlert()
+                }
+            default:
+                break;
+        }
+        
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        
+    }
+    
+    func isYelpInstalled() -> Bool {
+        return UIApplication.sharedApplication().canOpenURL(NSURL(string: "yelp5.3:")!)
+    }
+    
+    func isFoursquareInstalled() -> Bool {
+        return UIApplication.sharedApplication().canOpenURL(NSURL(string: "foursquare:")!)
+    }
+
+    func alertView(alertView: UIAlertView, clickedButtonAtIndex buttonIndex: Int) {
+        switch buttonIndex {
+            case 0:
+                if(alertView.buttonTitleAtIndex(0) == "Cancel" || alertView.buttonTitleAtIndex(0) == "OK") {
+                    break;
+                }
                 break;
             default:
                 break;
         }
     }
+    
+    func goToMaps() {
+        let formattedAddress = address.text!.replace(" ", withString: "+").replace("\n", withString: ",+")
+        let loc = "http://maps.apple.com/?q=" + formattedAddress
+        let url:NSURL = NSURL(string: loc)!
+        UIApplication.sharedApplication().openURL(url)
+    }
 
-    @IBAction func createFavorite(sender: AnyObject) {
+    func createFavorite() {
 
-        if(selected){
+        if selected {
             toggleFavorite(false, save: false)
         }
         else{
@@ -307,33 +340,75 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         }
     }
     
-    func toggleFavorite(isFavorite: Bool, save: Bool){
+    func toggleFavorite(isFavorite: Bool, save: Bool) {
         
-        if(isFavorite){
-            var selectedStar = UIImage(named: "star.png")
-            var newImg = scaleImage(selectedStar!, newSize: CGSize(width: 25.0, height: 25.0))
-            button3.setImage(newImg, forState: UIControlState.Normal)
+        if isFavorite {
+            let selectedStar = UIImage(named: "star.png")
+            let newImg = scaleImage(selectedStar!, newSize: CGSize(width: 25.0, height: 25.0))
+            self.navigationItem.rightBarButtonItem?.image = newImg
+            selected = true
         }
         else{
-            var selectedStar = UIImage(named: "star-50.png")
-            var newImg = scaleImage(selectedStar!, newSize: CGSize(width: 25.0, height: 25.0))
-            button3.setImage(newImg, forState: UIControlState.Normal)
+            let star = UIImage(named: "star-50.png")
+            let newImg = scaleImage(star!, newSize: CGSize(width: 25.0, height: 25.0))
+            self.navigationItem.rightBarButtonItem?.image = newImg
             coreDataHelper.deleteFavorite("Favorites", key: "list", barName: name)
+            managePushChannels(false)
+            selected = false
         }
-        if(save){
+        if save {
             coreDataHelper.saveString("Favorites", value: name, key: "list")
+            managePushChannels(true)
+
+            // Alert about being subscribed to push notifications
+            let alert = UIAlertView()
+            alert.title = "Push Notifcations"
+            alert.message = "You will now recieve notifications from this bar when they update their deals.\n\nTo unsubscribe, unfavorite this bar."
+            alert.delegate = self
+            alert.addButtonWithTitle("OK")
+            alert.show()
         }
-        
     }
     
+    func managePushChannels(add: Bool) {
     
-    @IBAction func goToMaps(sender: AnyObject) {
-        var formattedAddress = self.address.stringByReplacingOccurrencesOfString(" ", withString: "+", options: NSStringCompareOptions.LiteralSearch, range: nil)
-        var loc = "http://maps.apple.com/?q=" + self.address + ",+" + detailTown + ",+IA"
-        var formattedLoc = loc.stringByReplacingOccurrencesOfString(" ", withString: "+", options: NSStringCompareOptions.LiteralSearch, range: nil)
-
-        var url:NSURL = NSURL(string: formattedLoc)!
-        UIApplication.sharedApplication().openURL(url)
+        let currentInstallation = PFInstallation.currentInstallation()
+        if add {
+            currentInstallation.addUniqueObject(formatBarName(name), forKey: "channels")
+        }
+        else {
+            currentInstallation.removeObject(formatBarName(name), forKey: "channels")
+        }
+        currentInstallation.saveInBackgroundWithBlock({ (succeeded,e) -> Void in
+            
+            if let error = e {
+                println("Error:  (error.localizedDescription)")
+            }
+        })
+    }
+    
+    func formatBarName(name: String) -> String {
+        return name.replace(" ", withString: "").replace("'", withString: "").replace("!", withString: "").replace("&", withString: "")
+    }
+    
+    func configuredMailComposeViewController() -> MFMailComposeViewController {
+        let mailComposerVC = MFMailComposeViewController()
+        mailComposerVC.mailComposeDelegate = self
+            
+        mailComposerVC.setToRecipients(["leerob@iastate.edu"])
+        mailComposerVC.setSubject(name)
+        mailComposerVC.setMessageBody("Hello,\n\nI've noticed a problem with " + name + " on TabSaver. The problem is...", isHTML: false)
+   
+        return mailComposerVC
+    }
+    
+    func showSendMailErrorAlert() {
+        let sendMailErrorAlert = UIAlertView(title: "Could Not Send Email", message: "Your device could not send e-mail.  Please check e-mail configuration and try again.", delegate: self, cancelButtonTitle: "OK")
+        sendMailErrorAlert.show()
+    }
+    
+    func mailComposeController(controller: MFMailComposeViewController!, didFinishWithResult result: MFMailComposeResult, error: NSError!) {
+        controller.dismissViewControllerAnimated(true, completion: nil)
     }
     
     func scaleImage(image: UIImage, newSize: CGSize) -> UIImage {
@@ -359,15 +434,35 @@ class BarDetail: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         
         return scaledImage
     }
-    
+
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "goToWebsite" {
             var WS = segue.destinationViewController as! Website
-            WS.website = self.website
+            WS.website = website.text!
+        }
+        
+        if segue.identifier == "AllDeals" {
+            var WD = segue.destinationViewController as! WeeklyDeals
+            WD.mon = mon.replace(",", withString: "\n")
+            WD.tue = tue.replace(",", withString: "\n")
+            WD.wed = wed.replace(",", withString: "\n")
+            WD.thu = thu.replace(",", withString: "\n")
+            WD.fri = fri.replace(",", withString: "\n")
+            WD.sat = sat.replace(",", withString: "\n")
+            WD.sun = sun.replace(",", withString: "\n")
+            WD.primary = primary
         }
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+}
+
+extension String
+{
+    func replace(target: String, withString: String) -> String
+    {
+        return self.stringByReplacingOccurrencesOfString(target, withString: withString, options: NSStringCompareOptions.LiteralSearch, range: nil)
     }
 }

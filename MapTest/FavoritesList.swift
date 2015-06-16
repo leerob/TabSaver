@@ -13,8 +13,7 @@ class FavoritesList: UITableViewController {
 
     var favorites = [] as NSMutableArray
     var coreDataHelper = CoreDataHelper()
-    @IBOutlet weak var barLabel: UILabel!
-    
+   
     override func viewDidLoad() {
         super.viewDidLoad()
         favorites = coreDataHelper.getFavoritesList("Favorites", key: "list")
@@ -31,7 +30,6 @@ class FavoritesList: UITableViewController {
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return favorites.count
     }
-
    
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) as! UITableViewCell
@@ -39,20 +37,17 @@ class FavoritesList: UITableViewController {
         return cell
     }
 
-    
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "FAVORITES"
+        return ""
     }
-    
 
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        
+        // Delete the row from the data source and core data
         if editingStyle == .Delete {
-            
-            // Delete the row from the data source
             coreDataHelper.deleteFavorite("Favorites", key: "list", barName: favorites.objectAtIndex(indexPath.row) as! String)
             favorites.removeObjectAtIndex(indexPath.row)
             tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
         }
     }
-
 }
