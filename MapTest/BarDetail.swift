@@ -23,6 +23,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
     @IBOutlet weak var number: UILabel!
     @IBOutlet weak var website: UILabel!
     @IBOutlet weak var address: UILabel!
+    @IBOutlet weak var hoursOpen: UILabel!
     @IBOutlet weak var mapView: MKMapView!
  
     // Static labels
@@ -47,6 +48,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
     var detailTown = ""
     var detailName = ""
     var distance = ""
+    var foursquareID = ""
     var barsArr = [] as NSArray
     var deals = []
     var selected = false
@@ -57,6 +59,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
     var coreDataHelper = CoreDataHelper()
     var theme = 0
     var ImagesDict = Dictionary<String, NSData>()
+    var previousY = -100.0 as CGFloat
     
     let tableHeaderHeight: CGFloat = 100.0
     var headerView: UIView!
@@ -80,6 +83,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                 address.text = barsArr[i]["address"] as? String
                 address.text = address.text! + "\n" + detailTown + ", IA"
                 website.text = barsArr[i]["website"] as? String
+                foursquareID = barsArr[i]["foursquare"] as! String
                 name = barName
                 rawNumber = barsArr[i]["number"] as! NSString
                 
@@ -194,9 +198,21 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
     }
     
     func updateHeaderView() {
-        
         var gradientRect = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: tableHeaderHeight)
         var headerRect = CGRect(x: 0, y: -tableHeaderHeight, width: tableView.bounds.width, height: tableHeaderHeight)
+        
+        let currentY = tableView.contentOffset.y
+        if currentY < previousY && currentY < -100 {
+            decreaseOpacity(barName)
+            decreaseOpacity(distanceToBar)
+            decreaseOpacity(hoursOpen)
+        }
+        else {
+            increaseOpacity(barName)
+            increaseOpacity(distanceToBar)
+            increaseOpacity(hoursOpen)
+        }
+        previousY = currentY
         
         if tableView.contentOffset.y < -tableHeaderHeight {
             headerRect.origin.y = tableView.contentOffset.y
@@ -207,6 +223,20 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
        
         gradient.frame = gradientRect
         headerView.frame = headerRect
+    }
+    
+    func decreaseOpacity(label: UILabel!) {
+        label.alpha -= 0.04
+        if label.alpha < 0.0 {
+            label.alpha = 0
+        }
+    }
+    
+    func increaseOpacity(label: UILabel!) {
+        label.alpha += 0.04
+        if label.alpha > 1.0 {
+            label.alpha = 1.0
+        }
     }
     
     override func scrollViewDidScroll(scrollView: UIScrollView) {
@@ -276,16 +306,23 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                     UIApplication.sharedApplication().openURL(NSURL(string: "http://www.yelp.com/search?find_desc=" + urlStr)!)
                 }
             case 5:
-                if isFoursquareInstalled() {
-                    // Call into the Foursquare app
-                    // Make GET request to https://api.foursquare.com/v2/venues/search?ll=42.5,-92.4&query=beck's
-                    // Get ID from response and append to url string
-                    
-                    UIApplication.sharedApplication().openURL(NSURL(string: "foursquare://venues/" + "INSERT ID HERE")!)
+                if foursquareID == "None" {
+                    let alert = UIAlertView()
+                    alert.title = "We're Sorry!"
+                    alert.message = "This bar does not have a Foursquare page."
+                    alert.delegate = self
+                    alert.addButtonWithTitle("OK")
+                    alert.show()
                 }
                 else {
-                    // Use the website
-                    UIApplication.sharedApplication().openURL(NSURL(string: "https://foursquare.com/v/" + "INSERT ID HERE")!)
+                    if isFoursquareInstalled() {
+                        // Call into the Foursquare app
+                        UIApplication.sharedApplication().openURL(NSURL(string: "foursquare://venues/" + foursquareID)!)
+                    }
+                    else {
+                        // Use the website
+                        UIApplication.sharedApplication().openURL(NSURL(string: "https://foursquare.com/v/" + foursquareID)!)
+                    }
                 }
             case 6:
                 // Report a problem

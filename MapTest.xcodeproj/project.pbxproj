@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		9B08D61D1B269145002E224C /* loading.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B08D61C1B269145002E224C /* loading.png */; };
-		9B0D41061A885B7B00B39267 /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B0D41051A885B7B00B39267 /* launch.png */; };
 		9B44E4911B13D31F001BAA4B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B44E4901B13D31F001BAA4B /* AudioToolbox.framework */; };
 		9B452BD31B15698A00A453FA /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B452BD21B15698A00A453FA /* ParseUI.framework */; };
 		9B4C768E1AF86DEA00DB979E /* CoreDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B4C768D1AF86DEA00DB979E /* CoreDataHelper.swift */; };
@@ -123,7 +122,6 @@
 
 /* Begin PBXFileReference section */
 		9B08D61C1B269145002E224C /* loading.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = loading.png; sourceTree = "<group>"; };
-		9B0D41051A885B7B00B39267 /* launch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launch.png; sourceTree = "<group>"; };
 		9B44E48F1B13D31E001BAA4B /* tabsaver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = tabsaver.entitlements; sourceTree = "<group>"; };
 		9B44E4901B13D31F001BAA4B /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		9B452BD21B15698A00A453FA /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = MapTest/ParseUI.framework; sourceTree = "<group>"; };
@@ -334,7 +332,6 @@
 				9BA4285F1ADE043500578522 /* star.png */,
 				9BD2D6DA1B08337B0027B2F8 /* star2.png */,
 				9BC0BAD01A9303840042F301 /* gps.png */,
-				9B0D41051A885B7B00B39267 /* launch.png */,
 				9BBFDE991A32511D00AF510D /* Info.plist */,
 				9B69A5731A770F480089F5C3 /* settings-50.png */,
 				9B69A5781A79E42E0089F5C3 /* star-50.png */,
@@ -489,7 +486,6 @@
 				9BA428601ADE043500578522 /* star.png in Resources */,
 				9BBD0F9D1A4549FF00F4E54E /* Ames, IA.gpx in Resources */,
 				9BD2D6DB1B08337B0027B2F8 /* star2.png in Resources */,
-				9B0D41061A885B7B00B39267 /* launch.png in Resources */,
 				9BAC80161AFFCAC400C3F964 /* (null) in Resources */,
 				9BBFDEA51A32511D00AF510D /* LaunchScreen.xib in Resources */,
 				9BBFDEA21A32511D00AF510D /* Images.xcassets in Resources */,

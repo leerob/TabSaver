@@ -11,6 +11,7 @@ import CoreLocation
 import Parse
 import MapKit
 import Foundation
+import SystemConfiguration
 
 class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, MKMapViewDelegate, CLLocationManagerDelegate, UISearchBarDelegate, SettingsDelegate {
     
@@ -23,6 +24,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var bars = [] as NSMutableArray
     var barsArr = [] as NSArray
     var removedBars = [] as NSMutableArray
+    var mapBars = [] as NSMutableArray
     var detailName = ""
     var detailTown = ""
     var distance = ""
@@ -47,52 +49,72 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Initally hide the map and start async retriving images
-        mapView.hidden = true
-        curLocBtn.hidden = true
-        retrieveImages()
-        
-        // Handle user location
-        locationManager.requestWhenInUseAuthorization()
-        
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.delegate = self
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            locationManager.startUpdatingLocation()
+        if !isConnectedToNetwork() {
+            let alert = UIAlertView()
+            alert.title = "Internet Disabled"
+            alert.message = "An internet connection is required to use this app. Please reconnect and try again."
+            alert.addButtonWithTitle("OK")
+            alert.show()
         }
-        
-        
-        // Set the span and region for the map (Default to Ames)
-        if(locationManager.location == nil) {
-            let span = MKCoordinateSpanMake(0.075, 0.075)
-            let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
-            mapView.setRegion(region, animated: true)
+        else {
+            
+            // Initally hide the map and start async retriving images
+            mapView.hidden = true
+            curLocBtn.hidden = true
+            retrieveImages()
+            
+            // Handle user location
+            locationManager.requestWhenInUseAuthorization()
+            
+            if CLLocationManager.locationServicesEnabled() {
+                locationManager.delegate = self
+                locationManager.desiredAccuracy = kCLLocationAccuracyBest
+                locationManager.startUpdatingLocation()
+            }
+            
+            
+            // Set the span and region for the map (Default to Ames)
+            if(locationManager.location == nil) {
+                let span = MKCoordinateSpanMake(0.075, 0.075)
+                let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
+                mapView.setRegion(region, animated: true)
+            }
+            else{
+                setLocation()
+            }
+            
+            // Support for settings
+            showDeals = coreDataHelper.getInt("ShowNo", key: "show")
+            showClosed = coreDataHelper.getInt("ShowClosed", key: "show")
+            
+            // Get JSON data from URL, create bar array, and sort by distance
+            barsArr = parseJSON(getJSON("http://tabsaver.info/retrieveBars.php")) as NSArray
+            bars = createBarArray(barsArr)
+            setDistances()
+            sortBars()
+            mapBars = bars
+            
+            // Add refresh control to table
+            tableView.delegate = self
+            refreshControl.backgroundColor = colors.blue
+            refreshControl.tintColor = UIColor.whiteColor()
+            refreshControl.addTarget(self, action: Selector("refreshDistances"), forControlEvents: UIControlEvents.ValueChanged)
+            self.tableView.addSubview(refreshControl)
+            
+            // Add the settings button to the left bar button
+            let img = scaleImage(UIImage(named: "settings-50.png")!, newSize: CGSize(width: 20.0, height: 20.0))
+            let settingsBtn = UIBarButtonItem(image: img, style: UIBarButtonItemStyle.Plain, target: self, action: "goToSettings")
+            self.navigationItem.leftBarButtonItem = settingsBtn
+            
+            // Change the font of the search bar
+            for subView in listSearchBar.subviews  {
+                for subsubView in subView.subviews  {
+                    if let textField = subsubView as? UITextField {
+                        textField.font = UIFont(name: ".HelveticaNeueDeskInterface-Regular", size: 14.0)
+                    }
+                }
+            }
         }
-        else{
-            setLocation()
-        }
-        
-        // Support for settings
-        showDeals = coreDataHelper.getInt("ShowNo", key: "show")
-        showClosed = coreDataHelper.getInt("ShowClosed", key: "show")
-
-        // Get JSON data from URL, create bar array, and sort by distance
-        barsArr = parseJSON(getJSON("http://tabsaver.info/retrieveBars.php")) as NSArray
-        bars = createBarArray(barsArr)
-        setDistances()
-        sortBars()
-        
-        // Add refresh control to table
-        tableView.delegate = self
-        refreshControl.backgroundColor = colors.blue
-        refreshControl.tintColor = UIColor.whiteColor()
-        refreshControl.addTarget(self, action: Selector("refreshDistances"), forControlEvents: UIControlEvents.ValueChanged)
-        self.tableView.addSubview(refreshControl)
-        
-        // Add the settings button to the left bar button
-        let img = scaleImage(UIImage(named: "settings-50.png")!, newSize: CGSize(width: 20.0, height: 20.0))
-        let settingsBtn = UIBarButtonItem(image: img, style: UIBarButtonItemStyle.Plain, target: self, action: "goToSettings")
-        self.navigationItem.leftBarButtonItem = settingsBtn
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -128,9 +150,22 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 break;
         }
         
+        
+//
+//        // Support for settings
+//        showDeals = coreDataHelper.getInt("ShowNo", key: "show")
+//        showClosed = coreDataHelper.getInt("ShowClosed", key: "show")
+//        
+//        // Create bar array, and sort by distance
+//        bars = createBarArray(barsArr)
+//        setDistances()
+//        sortBars()
+//        tableView.reloadData()
+//        tableView.reloadInputViews()
+        
         // Add bars to map
         mapView.removeAnnotations(mapView.annotations)
-        for bar in bars {
+        for bar in mapBars {
             mapView.addAnnotation(bar.annotation)
         }
     }
@@ -395,6 +430,18 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 alert.show()
                 searchBar.resignFirstResponder()
             }
+            else {
+                for bar in removedBars {
+                    if !bars.containsObject(bar) {
+                        bars.addObject(bar)
+                    }
+                }
+
+                removedBars.removeAllObjects()
+                sortBars()
+                tableView.reloadData()
+
+            }
             
             searchBar.text = ""
         }
@@ -460,6 +507,19 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             tableView.reloadData()
             tableView.reloadInputViews()
             prevSearchStrLen = size
+        }
+        else {
+            if count(searchText) == 0 {
+                for bar in removedBars {
+                    if !bars.containsObject(bar) {
+                        bars.addObject(bar)
+                    }
+                }
+                
+                removedBars.removeAllObjects()
+                sortBars()
+                tableView.reloadData()
+            }
         }
     }
 
@@ -660,6 +720,27 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         var image: UIImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return image
+    }
+    
+    func isConnectedToNetwork() -> Bool {
+        
+        var zeroAddress = sockaddr_in(sin_len: 0, sin_family: 0, sin_port: 0, sin_addr: in_addr(s_addr: 0), sin_zero: (0, 0, 0, 0, 0, 0, 0, 0))
+        zeroAddress.sin_len = UInt8(sizeofValue(zeroAddress))
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        let defaultRouteReachability = withUnsafePointer(&zeroAddress) {
+            SCNetworkReachabilityCreateWithAddress(nil, UnsafePointer($0)).takeRetainedValue()
+        }
+        
+        var flags: SCNetworkReachabilityFlags = 0
+        if SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) == 0 {
+            return false
+        }
+        
+        let isReachable = (flags & UInt32(kSCNetworkFlagsReachable)) != 0
+        let needsConnection = (flags & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+        
+        return (isReachable && !needsConnection) ? true : false
     }
 }
 

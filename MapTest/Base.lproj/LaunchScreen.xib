@@ -10,18 +10,18 @@
             <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="launch.png" translatesAutoresizingMaskIntoConstraints="NO" id="MxW-ym-nAi">
-                    <rect key="frame" x="-35" y="36" width="391" height="447"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="transparent.png" translatesAutoresizingMaskIntoConstraints="NO" id="MxW-ym-nAi">
+                    <rect key="frame" x="100" y="91" width="128" height="148"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="447" id="A0t-I6-vfk"/>
+                        <constraint firstAttribute="height" constant="148" id="A0t-I6-vfk"/>
                     </constraints>
                 </imageView>
             </subviews>
             <color key="backgroundColor" red="0.22352941179999999" green="0.41176470590000003" blue="0.96862745100000003" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
-                <constraint firstItem="MxW-ym-nAi" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="-35" id="8Mn-FD-Ov9"/>
-                <constraint firstAttribute="trailing" secondItem="MxW-ym-nAi" secondAttribute="trailing" constant="-36" id="UpE-JS-VaN"/>
-                <constraint firstItem="MxW-ym-nAi" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="36" id="z2c-aw-teg"/>
+                <constraint firstItem="MxW-ym-nAi" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="100" id="8Mn-FD-Ov9"/>
+                <constraint firstAttribute="trailing" secondItem="MxW-ym-nAi" secondAttribute="trailing" constant="92" id="UpE-JS-VaN"/>
+                <constraint firstItem="MxW-ym-nAi" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="91" id="z2c-aw-teg"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
@@ -29,6 +29,6 @@
         </view>
     </objects>
     <resources>
-        <image name="launch.png" width="750" height="1334"/>
+        <image name="transparent.png" width="1160" height="1160"/>
     </resources>
 </document>
