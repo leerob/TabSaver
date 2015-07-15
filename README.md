@@ -12,7 +12,7 @@ About
 -----
 [TabSaver](https://itunes.apple.com/us/app/id958415829) is an iOS application written in Swift that helps you find the best deals for your local bars. By using your current location, TabSaver finds the closest deals to you and shows the exact mileage to each bar. Have a favorite bar? Check out their details page to find their address, website, phone number, and every deal they offer.
 
-![Screenshot](http://i.imgur.com/FB7Vlzf.png "Screenshots")
+![Screenshot](http://i.imgur.com/XA2dNVv.png "Screenshots")
 
 Supported Cities
 ----
