@@ -29,6 +29,7 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
     
     var theme = 0
     var coreDataHelper = CoreDataHelper()
+    var analytics = Analytics()
     var delegate: SettingsDelegate? = nil
   
     
@@ -117,16 +118,20 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
                 // LOCATIONS //
                 switch indexPath.row {
                     case 0: // Ames
-                        self.delegate?.selectLocation(42.035021, long: -93.645) 
+                        self.delegate?.selectLocation(42.035021, long: -93.645)
+                        analytics.clicked("Ames")
                         break;
                     case 1: // Iowa City
                         self.delegate?.selectLocation(41.656497, long: -91.535339)
+                        analytics.clicked("Iowa City")
                         break;
                     case 2: // Cedar Falls
                         self.delegate?.selectLocation(42.520700, long: -92.438965)
+                        analytics.clicked("Cedar Falls")
                         break;
-                    case 3: // Cedar Rapids
-                        self.delegate?.selectLocation(41.976115, long: -91.672977)
+                    case 3: // Des Moines
+                        self.delegate?.selectLocation(41.589883, long: -93.624183)
+                        analytics.clicked("Des Moines")
                         break;
                     default:
                         self.delegate?.selectLocation(42.035021, long: -93.645)
@@ -139,18 +144,22 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
                     case 0: // Default Theme
                         toggleChecks("Default")
                         coreDataHelper.saveInt("Theme", value: 0, key: "themeNumber")
+                        analytics.clicked("Default")
                         break;
                     case 1: // Cyclones Theme
                         toggleChecks("Cyclones")
                         coreDataHelper.saveInt("Theme", value: 1, key: "themeNumber")
+                        analytics.clicked("Cyclones")
                         break;
                     case 2: // Hawkeyes Theme
                         toggleChecks("Hawkeyes")
                         coreDataHelper.saveInt("Theme", value: 2, key: "themeNumber")
+                        analytics.clicked("Hawkeyes")
                         break;
                     case 3: // Panthers Theme
                         toggleChecks("Panthers")
                         coreDataHelper.saveInt("Theme", value: 3, key: "themeNumber")
+                        analytics.clicked("Panthers")
                         break;
                     default:
                         break;
@@ -168,6 +177,7 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
                             barSwitch.setOn(true, animated: true)
                             coreDataHelper.saveInt("ShowClosed", value: 0, key: "show")
                         }
+                        analytics.clicked("Show Closed Bars")
                         break;
                     case 1: // Show Bars With No Deals
                         if noDealsSwitch.on {
@@ -178,6 +188,7 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
                             noDealsSwitch.setOn(true, animated: true)
                             coreDataHelper.saveInt("ShowNo", value: 0, key: "show")
                         }
+                        analytics.clicked("Show Bars With No Deals")
                         break;
                     case 2: // Show Favorite Bars
                         if favsSwitch.on {
@@ -188,27 +199,15 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
                             favsSwitch.setOn(true, animated: true)
                             coreDataHelper.saveInt("ShowFav", value: 0, key: "show")
                         }
+                        analytics.clicked("Show Favorites As Stars")
                         break;
                     case 3: // Manage Favorite Bars
-                        // Go to tableview
+                        analytics.clicked("Manage Favorite Bars")
                         break;
                     case 4: // Manage Permissions
-                        // i0S 8 Check
-                        switch UIDevice.currentDevice().systemVersion.compare("8.0.0", options: NSStringCompareOptions.NumericSearch) {
-                            case .OrderedSame, .OrderedDescending:
-                                let settingsApp = NSURL(string: UIApplicationOpenSettingsURLString)
-                                UIApplication.sharedApplication().openURL(settingsApp!)
-                                break;
-                            case .OrderedAscending:
-                                let alert = UIAlertView()
-                                alert.title = "Navigate To"
-                                alert.message = "Settings/Privacy/Location/TabSaver"
-                                alert.addButtonWithTitle("OK")
-                                alert.show()
-                                break;
-                            default:
-                                break;
-                        }
+                        let settingsApp = NSURL(string: UIApplicationOpenSettingsURLString)
+                        UIApplication.sharedApplication().openURL(settingsApp!)
+                        analytics.clicked("Manage Permissions")
                         break;
                     default:
                         break;
@@ -217,6 +216,8 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
             // SUPPORT //
             case 3:
                 switch indexPath.row {
+                    case 0:
+                        analytics.clicked("Client Login")
                     case 1: // Contact Us
                         // Create an email
                         let mailComposeViewController = configuredMailComposeViewController()

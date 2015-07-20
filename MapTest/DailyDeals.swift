@@ -37,11 +37,14 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
 
     let locationManager = CLLocationManager()
     var ImagesDict = Dictionary<String, NSData>()
+    var HoursDict = Dictionary<String, String>()
+    var DealsDict = Dictionary<String, [String]>()
     var tapRecognizer = UITapGestureRecognizer()
     var refreshControl = UIRefreshControl()
     
     var colors = Colors()
     var coreDataHelper = CoreDataHelper()
+    var analytics = Analytics()
     var primary = UIColor()
     var secondary = UIColor()
     
@@ -61,7 +64,9 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             // Initally hide the map and start async retriving images
             mapView.hidden = true
             curLocBtn.hidden = true
+            retrieveBars()
             retrieveImages()
+            retrieveHours()
             
             // Handle user location
             locationManager.requestWhenInUseAuthorization()
@@ -86,14 +91,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             // Support for settings
             showDeals = coreDataHelper.getInt("ShowNo", key: "show")
             showClosed = coreDataHelper.getInt("ShowClosed", key: "show")
-            
-            // Get JSON data from URL, create bar array, and sort by distance
-            barsArr = parseJSON(getJSON("http://tabsaver.info/retrieveBars.php")) as NSArray
-            bars = createBarArray(barsArr)
-            setDistances()
-            sortBars()
-            mapBars = bars
-            
+
             // Add refresh control to table
             tableView.delegate = self
             refreshControl.backgroundColor = colors.blue
@@ -151,17 +149,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
         
         
-//
-//        // Support for settings
-//        showDeals = coreDataHelper.getInt("ShowNo", key: "show")
-//        showClosed = coreDataHelper.getInt("ShowClosed", key: "show")
-//        
-//        // Create bar array, and sort by distance
-//        bars = createBarArray(barsArr)
-//        setDistances()
-//        sortBars()
-//        tableView.reloadData()
-//        tableView.reloadInputViews()
+        // Possibly reload bars here so that No Deals and Closed changes update
         
         // Add bars to map
         mapView.removeAnnotations(mapView.annotations)
@@ -170,6 +158,81 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
+    func retrieveBars() {
+        
+        var query = PFQuery(className:"Bars")
+        findAsync(query).continueWithSuccessBlock {
+            (task: BFTask!) -> AnyObject! in
+
+            var barsArr = [] as NSMutableArray
+            self.barsArr = task.result as! NSArray
+      
+            let bars = task.result as! NSArray
+            for bar in bars {
+                
+                let name = bar["name"] as! String
+                let lat = bar["lat"] as! NSNumber
+                let long = bar["long"] as! NSNumber
+                
+                // Query this bar's deals
+                var deal = ""
+                var query = PFQuery(className:"Deals")
+                query.whereKey("name", equalTo: name)
+                self.findAsync(query).continueWithSuccessBlock {
+                    (task: BFTask!) -> AnyObject! in
+                    
+                    let bars = task.result as! NSArray
+                    let dealArr = bars[0][self.getDayOfWeek()] as! [String]
+                    deal = ", ".join(dealArr)
+                    
+                    // Create deals array to pass to detail page
+                    let sun = bars[0]["Sunday"] as! [String]
+                    let mon = bars[0]["Monday"] as! [String]
+                    let tue = bars[0]["Tuesday"] as! [String]
+                    let wed = bars[0]["Wednesday"] as! [String]
+                    let thu = bars[0]["Thursday"] as! [String]
+                    let fri = bars[0]["Friday"] as! [String]
+                    let sat = bars[0]["Saturday"] as! [String]
+                    self.DealsDict[name] = [", ".join(sun),
+                                            ", ".join(mon),
+                                            ", ".join(tue),
+                                            ", ".join(wed),
+                                            ", ".join(thu),
+                                            ", ".join(fri),
+                                            ", ".join(sat)]
+                    
+                    return nil
+                    
+                    }.continueWithSuccessBlock {
+                        (task: BFTask!) -> AnyObject! in
+                        
+                        let newBar = BarAnnotation(latitude: lat.doubleValue, longitude: long.doubleValue, name: name, deal: deal.replace(",", withString: ", "))
+                        newBar.town = bar["city"] as! String
+                        
+                        if(deal == "No Deals" && self.showDeals == 1) {
+                            //println(deal)
+                        }
+                        else if(deal == "Closed" && self.showClosed == 1) {
+                            //println(deal)
+                        }
+                        else {
+                            barsArr.addObject(newBar)
+                            self.bars = barsArr
+                            self.tableView.reloadData()
+                            self.mapView.addAnnotation(newBar.annotation)
+                            self.mapBars = barsArr
+                            
+                            self.setDistances()
+                            self.sortBars()
+                        }
+                        
+                        return nil
+                }
+            }
+            return nil
+        }
+    }
+
     func retrieveImages() {
         
         var image: UIImage?
@@ -210,6 +273,44 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                                 }
                             }
                         }
+                    }
+                }
+            } else {
+                // Log details of the failure
+                println("Error: \(error!) \(error!.userInfo!)")
+            }
+        }
+    }
+    
+    func retrieveHours() {
+        
+        var query = PFQuery(className:"BarHours")
+        query.findObjectsInBackgroundWithBlock {
+            (objects: [AnyObject]?, error: NSError?) -> Void in
+            
+            if error == nil {
+                // Succesfully found the hours
+                if let objects = objects as? [PFObject] {
+                    for object in objects {
+                        
+                        // Get day of the week + 2 hours
+                        let dateFormatter = NSDateFormatter()
+                        dateFormatter.dateFormat = "EEEE"
+                        let currDate = NSDate()
+                        let twoHours = 2 * 60 * 60 as NSTimeInterval
+                        let newDate = currDate.dateByAddingTimeInterval(-twoHours)
+                        let dayOfWeekString = dateFormatter.stringFromDate(newDate)
+                        
+                        let barName = object["name"] as! String
+                        var barHours = object[dayOfWeekString.lowercaseString] as! String
+                        if barHours == "Closed" || barHours == "Hours Unknown" {
+                            // For some reason != wasn't working...
+                        }
+                        else {
+                            barHours = "Open \(barHours)"
+                        }
+                        
+                        self.HoursDict[barName] = barHours
                     }
                 }
             } else {
@@ -310,8 +411,9 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let amesLocation = CLLocation(latitude: 42.035021, longitude: -93.645)
         let cfLocation = CLLocation(latitude: 42.520700, longitude: -92.438965)
         let icLocation = CLLocation(latitude: 41.656497, longitude: -91.535339)
+        let dmLocation = CLLocation(latitude: 41.589883, longitude: -93.624183)
         
-        if((locationManager.location.distanceFromLocation(amesLocation) / 1609.344) < 30) {
+        if((locationManager.location.distanceFromLocation(amesLocation) / 1609.344) < 15) {
             let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
             mapView.setRegion(region, animated: true)
         }
@@ -326,50 +428,17 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             mapView.setRegion(region, animated: true)
         }
             
+        else if((locationManager.location.distanceFromLocation(dmLocation) / 1609.344) < 30) {
+            let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.589883, longitude: -93.624183), span: span)
+            mapView.setRegion(region, animated: true)
+        }
+            
         else { // Default to Ames location
             let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
             mapView.setRegion(region, animated: true)
         }
     }
-    
-    func createBarArray(arr: NSArray) -> NSMutableArray {
-        
-        var bars = [] as NSMutableArray
-        
-        // Get day of the week + 2 hours
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.dateFormat = "EEEE"
-        let currDate = NSDate()
-        let twoHours = 2 * 60 * 60 as NSTimeInterval
-        let newDate = currDate.dateByAddingTimeInterval(-twoHours)
-        let dayOfWeekString = dateFormatter.stringFromDate(newDate)
-        
-        // Loop through bars
-        for(var i = 0; i < arr.count; i++) {
-            
-            let name = arr[i]["name"] as! String
-            let lat = arr[i]["lat"] as! NSString
-            let long = arr[i]["long"] as! NSString
-            let negLong = -long.doubleValue
-            let deal = arr[i][dayOfWeekString] as! String
 
-            let newBar = BarAnnotation(latitude: lat.doubleValue, longitude: negLong, name: name, deal: deal.replace(",", withString: ", "))
-            newBar.town = arr[i]["town"] as! String
-            
-            if(deal == "No Deals" && showDeals == 1) {
-                //println(deal)
-            }
-            else if(deal == "Closed" && showClosed == 1) {
-                //println(deal)
-            }
-            else {
-                bars.addObject(newBar)
-            }
-        }
-        
-        return bars
-    }
-    
     func setDistances() {
         for bar in bars {
             let currentBar = bar as! BarAnnotation
@@ -419,6 +488,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     let region = MKCoordinateRegion(center: barAnn.location, span: span)
                     mapView.setRegion(region, animated: true)
                     mapView.selectAnnotation(bar.annotation, animated: true)
+                    analytics.barClicked(bar.name, key: "searchQueries")
                 }
             }
             
@@ -453,6 +523,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 distance = "\(bar.distance)"
                 detailName = bar.name
                 performSegueWithIdentifier("DetailFromList", sender: self)
+                analytics.barClicked(detailName, key: "searchQueries")
             }
             
             searchBar.resignFirstResponder()
@@ -655,9 +726,12 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             BD.detailTown = detailTown
             BD.theme = theme
             BD.ImagesDict = ImagesDict
+            BD.HoursDict = HoursDict
+            BD.DealsDict = DealsDict
             BD.distance = distance
             BD.primary = primary
             BD.secondary = secondary
+            analytics.barClicked(detailName, key: "pageClicks")
         }
         
         if segue.identifier == "Settings" {
@@ -741,6 +815,31 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let needsConnection = (flags & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
         
         return (isReachable && !needsConnection) ? true : false
+    }
+    
+    func findAsync(query:PFQuery) -> BFTask {
+        var task = BFTaskCompletionSource()
+        query.findObjectsInBackgroundWithBlock {
+            (objects, error) -> Void in
+            if error == nil {
+                task.setResult(objects)
+            } else {
+                task.setError(error)
+            }
+        }
+        return task.task
+    }
+    
+    func getDayOfWeek() -> String {
+        
+        // Get day of the week + 2 hours
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateFormat = "EEEE"
+        let currDate = NSDate()
+        let twoHours = 2 * 60 * 60 as NSTimeInterval
+        let newDate = currDate.dateByAddingTimeInterval(-twoHours)
+        let dayOfWeekString = dateFormatter.stringFromDate(newDate)
+        return dayOfWeekString
     }
 }
 

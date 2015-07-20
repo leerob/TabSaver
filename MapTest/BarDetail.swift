@@ -57,8 +57,11 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
     var secondary = UIColor()
     var colors = Colors()
     var coreDataHelper = CoreDataHelper()
+    var analytics = Analytics()
     var theme = 0
     var ImagesDict = Dictionary<String, NSData>()
+    var HoursDict = Dictionary<String, String>()
+    var DealsDict = Dictionary<String, [String]>()
     var previousY = -100.0 as CGFloat
     
     let tableHeaderHeight: CGFloat = 100.0
@@ -68,24 +71,28 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        for(var i = 0; i < barsArr.count; i++) {
+        // Loop through bars
+        for bar in barsArr {
             
-            let barName = barsArr[i]["name"] as! String
+            let barName = bar["name"] as! String
             if barName == detailName {
+                
                 // Retrieve selected bars information
-                sun = barsArr[i]["Sunday"] as! String
-                mon = barsArr[i]["Monday"] as! String
-                tue = barsArr[i]["Tuesday"] as! String
-                wed = barsArr[i]["Wednesday"] as! String
-                thu = barsArr[i]["Thursday"] as! String
-                fri = barsArr[i]["Friday"] as! String
-                sat = barsArr[i]["Saturday"] as! String
-                address.text = barsArr[i]["address"] as? String
+                let dealsArr = DealsDict[barName]!
+   
+                sun = dealsArr[0]
+                mon = dealsArr[1]
+                tue = dealsArr[2]
+                wed = dealsArr[3]
+                thu = dealsArr[4]
+                fri = dealsArr[5]
+                sat = dealsArr[6]
+                address.text = bar["address"] as? String
                 address.text = address.text! + "\n" + detailTown + ", IA"
-                website.text = barsArr[i]["website"] as? String
-                foursquareID = barsArr[i]["foursquare"] as! String
+                website.text = bar["website"] as? String
+                foursquareID = bar["foursquare"] as! String
                 name = barName
-                rawNumber = barsArr[i]["number"] as! NSString
+                rawNumber = bar["number"] as! NSString
                 
                 if rawNumber == "No Number" {
                     number.text = rawNumber as? String
@@ -95,18 +102,22 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                 }
                 
                 let span = MKCoordinateSpanMake(0.005, 0.005)
-                let lat = barsArr[i]["lat"] as! NSString
-                let long = barsArr[i]["long"] as! NSString
-                let negLong = -long.doubleValue
-                let loc = CLLocationCoordinate2D(latitude: lat.doubleValue, longitude: negLong)
+                let lat = bar["lat"] as! NSNumber
+                let long = bar["long"] as! NSNumber
+                let loc = CLLocationCoordinate2D(latitude: lat.doubleValue, longitude: long.doubleValue)
                 let region = MKCoordinateRegion(center: loc, span: span)
                 mapView.setRegion(region, animated: false)
-                mapView.addAnnotation(BarAnnotation(latitude: lat.doubleValue, longitude: negLong, name: name, deal: "").annotation)
+                mapView.addAnnotation(BarAnnotation(latitude: lat.doubleValue, longitude: long.doubleValue, name: name, deal: "").annotation)
             }
         }
         
         // Set image from dictionary
-        image.image = UIImage(data: ImagesDict[name]!)
+        if (ImagesDict[name] != nil) {
+          image.image = UIImage(data: ImagesDict[name]!)
+        }
+        
+        // Set hours from dictionary
+        hoursOpen.text = HoursDict[name]
         
         // Get day of the week + 2 hours
         let dateFormatter = NSDateFormatter()
@@ -116,7 +127,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
         let newDate = currDate.dateByAddingTimeInterval(-twoHours)
         let dayOfWeekString = dateFormatter.stringFromDate(newDate)
         
-        dailyDeals.text = getDailyDealStr(dayOfWeekString).replace(",", withString: ", ")
+        dailyDeals.text = getDailyDealStr(dayOfWeekString)
         barName.text = name
         distanceToBar.text = distance + " miles"
         
@@ -290,9 +301,11 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                     let url:NSURL = NSURL(string: "tel://\(rawNumber)")!
                     UIApplication.sharedApplication().openURL(url)
                 }
+                analytics.barClicked(name, key: "phoneCalls")
                 break;
             case 2:
                 performSegueWithIdentifier("goToWebsite", sender: self)
+                analytics.barClicked(name, key: "siteVisits")
                 break;
             case 4:
                 let yelpStr = "search?terms=" + name.replace(" ", withString: "+") + "&location=" + detailTown.replace(" ", withString: "+") + ",IA"
@@ -305,6 +318,8 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                     let urlStr = name.replace(" ", withString: "+") + "&find_loc=" + detailTown.replace(" ", withString: "+") + ",IA"
                     UIApplication.sharedApplication().openURL(NSURL(string: "http://www.yelp.com/search?find_desc=" + urlStr)!)
                 }
+                analytics.barClicked(name, key: "yelpClicks")
+                break;
             case 5:
                 if foursquareID == "None" {
                     let alert = UIAlertView()
@@ -324,6 +339,8 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                         UIApplication.sharedApplication().openURL(NSURL(string: "https://foursquare.com/v/" + foursquareID)!)
                     }
                 }
+                analytics.barClicked(name, key: "foursquareClicks")
+                break;
             case 6:
                 // Report a problem
                 let mailComposeViewController = configuredMailComposeViewController()
@@ -365,6 +382,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
         let loc = "http://maps.apple.com/?q=" + formattedAddress
         let url:NSURL = NSURL(string: loc)!
         UIApplication.sharedApplication().openURL(url)
+        analytics.barClicked(name, key: "directionsRequests")
     }
 
     func createFavorite() {
@@ -480,14 +498,15 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
         
         if segue.identifier == "AllDeals" {
             var WD = segue.destinationViewController as! WeeklyDeals
-            WD.mon = mon.replace(",", withString: "\n")
-            WD.tue = tue.replace(",", withString: "\n")
-            WD.wed = wed.replace(",", withString: "\n")
-            WD.thu = thu.replace(",", withString: "\n")
-            WD.fri = fri.replace(",", withString: "\n")
-            WD.sat = sat.replace(",", withString: "\n")
-            WD.sun = sun.replace(",", withString: "\n")
+            WD.mon = mon.replace(", ", withString: "\n")
+            WD.tue = tue.replace(", ", withString: "\n")
+            WD.wed = wed.replace(", ", withString: "\n")
+            WD.thu = thu.replace(", ", withString: "\n")
+            WD.fri = fri.replace(", ", withString: "\n")
+            WD.sat = sat.replace(", ", withString: "\n")
+            WD.sun = sun.replace(", ", withString: "\n")
             WD.primary = primary
+            analytics.barClicked(name, key: "viewAllDeals")
         }
     }
     

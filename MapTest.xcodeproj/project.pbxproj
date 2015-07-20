@@ -60,6 +60,7 @@
 		9BF2700C1B2CDBF800ADCF42 /* System San Francisco Display Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9BA20B3D1B1A881400A62F73 /* System San Francisco Display Regular.ttf */; };
 		9BF2700D1B2CDBFB00ADCF42 /* System San Francisco Display Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9BA20B3E1B1A881400A62F73 /* System San Francisco Display Thin.ttf */; };
 		9BF2700E1B2CDBFE00ADCF42 /* System San Francisco Display Ultralight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9BA20B3F1B1A881400A62F73 /* System San Francisco Display Ultralight.ttf */; };
+		9BF5E57C1B5C974D000B719E /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF5E57B1B5C974D000B719E /* Analytics.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -175,7 +176,7 @@
 		9BD2D6D21B0032650027B2F8 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		9BD2D6DA1B08337B0027B2F8 /* star2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = star2.png; sourceTree = "<group>"; };
 		9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Armchair.xcodeproj; path = Armchair/Armchair.xcodeproj; sourceTree = "<group>"; };
-		9CEF3B334CB1E67C1B5967BA /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BF5E57B1B5C974D000B719E /* Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -225,7 +226,6 @@
 				9B9887081AEF2CC000DA09F8 /* Parse.framework */,
 				9BBFDEBC1A32514000AF510D /* CoreLocation.framework */,
 				9BBFDEBA1A32513A00AF510D /* MapKit.framework */,
-				9CEF3B334CB1E67C1B5967BA /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -314,6 +314,7 @@
 				9BBFDE9A1A32511D00AF510D /* AppDelegate.swift */,
 				9B4C768F1AF8721A00DB979E /* Colors.swift */,
 				9B4C768D1AF86DEA00DB979E /* CoreDataHelper.swift */,
+				9BF5E57B1B5C974D000B719E /* Analytics.swift */,
 				9BBFDEC01A34FECD00AF510D /* BarAnnotation.swift */,
 				9B9865B41A35405B004E07A2 /* DealCell.swift */,
 				9B69A57D1A7C44B40089F5C3 /* SegControl.swift */,
@@ -507,6 +508,7 @@
 			files = (
 				9B9887241AF0777000DA09F8 /* ClientLogin.swift in Sources */,
 				9B4C76901AF8721A00DB979E /* Colors.swift in Sources */,
+				9BF5E57C1B5C974D000B719E /* Analytics.swift in Sources */,
 				9BBFDEC11A34FECD00AF510D /* BarAnnotation.swift in Sources */,
 				9BABC27D1ADCD68200A2239B /* dataModel.xcdatamodeld in Sources */,
 				9B69A57E1A7C44B40089F5C3 /* SegControl.swift in Sources */,
@@ -641,8 +643,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MapTest/tabsaver.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iOS Development: Lee Robinson (KF6XYFJBVV)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iOS Development: Lee Robinson (KF6XYFJBVV)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -653,7 +655,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = tabsaver;
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "41285adf-8ce9-4293-ab1d-ffd8fbb2d5f6";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/bridgingHeader.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = 1;
@@ -667,8 +669,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MapTest/tabsaver.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iOS Development: Lee Robinson (KF6XYFJBVV)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iOS Development: Lee Robinson (KF6XYFJBVV)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -679,7 +681,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = tabsaver;
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "41285adf-8ce9-4293-ab1d-ffd8fbb2d5f6";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/bridgingHeader.h";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
