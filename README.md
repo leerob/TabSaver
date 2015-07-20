@@ -5,7 +5,7 @@ TabSaver
 )](https://developer.apple.com/swift/)
 [![Platform](https://img.shields.io/badge/platform-iOS-brightgreen.svg?style=flat
 )](https://www.apple.com/ios/)
-[![Release](https://img.shields.io/badge/release-v1.2-orange.svg?style=flat
+[![Release](https://img.shields.io/badge/release-v2.0-orange.svg?style=flat
 )](http://www.tabsaverapp.com)
 
 About
@@ -19,12 +19,13 @@ Supported Cities
  - Ames, IA
  - Cedar Falls, IA
  - Iowa City, IA
+ - Des Moines, IA
 
 
 Contact
 ----
 Thanks for checking out TabSaver and I hope you enjoy it! Feel free to contact me.
 
-- v1.2 released 6/1/2015
+- v2.0 released 7/14/2015
 - Created by Lee Robinson at Iowa State Univeristy.
 - leerob@iastate.edu
