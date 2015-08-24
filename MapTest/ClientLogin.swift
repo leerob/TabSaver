@@ -83,40 +83,42 @@ class ClientLogin: UIViewController {
     
     func postLogin(user: String, pass: String, url : String, postCompleted : (succeeded: Bool) -> ()) {
         
-        var request = NSMutableURLRequest(URL: NSURL(string: url)!)
-        request.HTTPMethod = "POST"
-        let postString = "user=\(user)&pass=\(pass)"
-        var success = 0
+//        var request = NSMutableURLRequest(URL: NSURL(string: url)!)
+//        request.HTTPMethod = "POST"
+//        let postString = "user=\(user)&pass=\(pass)"
+//        var success = 0
+//        
+//        request.HTTPBody = postString.dataUsingEncoding(NSUTF8StringEncoding)
+//        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) {
+//            data, response, error in
+//            
+//            if error != nil {
+//                let alert = UIAlertView()
+//                alert.title = "Login Failed!"
+//                alert.message = "Error: \(error)"
+//                alert.delegate = self
+//                alert.addButtonWithTitle("OK")
+//                alert.show()
+//                return
+//            }
+//            
+//            let jsonData = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers , error: nil) as! NSDictionary
+//            success = jsonData["Success"] as! Int
+//            
+//            if(success == 1){
+//                self.currentBar = jsonData["Bar"] as! String
+//                self.currentCity = jsonData["City"] as! String
+//                postCompleted(succeeded: true)
+//            }
+//            else{
+//                postCompleted(succeeded: false)
+//            }
+//            
+//        }
+//        
+//        task.resume()
         
-        request.HTTPBody = postString.dataUsingEncoding(NSUTF8StringEncoding)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) {
-            data, response, error in
-            
-            if error != nil {
-                let alert = UIAlertView()
-                alert.title = "Login Failed!"
-                alert.message = "Error: \(error)"
-                alert.delegate = self
-                alert.addButtonWithTitle("OK")
-                alert.show()
-                return
-            }
-            
-            let jsonData = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers , error: nil) as! NSDictionary
-            success = jsonData["Success"] as! Int
-            
-            if(success == 1){
-                self.currentBar = jsonData["Bar"] as! String
-                self.currentCity = jsonData["City"] as! String
-                postCompleted(succeeded: true)
-            }
-            else{
-                postCompleted(succeeded: false)
-            }
-            
-        }
-        
-        task.resume()
+        postCompleted(succeeded: false)
     }
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {

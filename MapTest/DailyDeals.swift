@@ -20,11 +20,13 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var listSearchBar: UISearchBar!
     @IBOutlet weak var curLocBtn: UIButton!
- 
+    @IBOutlet weak var autoCompleteTable: UITableView!
+    
     var bars = [] as NSMutableArray
     var barsArr = [] as NSArray
     var removedBars = [] as NSMutableArray
     var mapBars = [] as NSMutableArray
+    var autoCompleteBars = [] as NSMutableArray
     var detailName = ""
     var detailTown = ""
     var distance = ""
@@ -48,7 +50,11 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var primary = UIColor()
     var secondary = UIColor()
     
-
+    var activityIndicatorView = NVActivityIndicatorView(frame: CGRectZero, type: NVActivityIndicatorType.BallSpinFadeLoader)
+    var blurView = UIVisualEffectView()
+    var barCount = 0
+    var initialLocation = ""
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -62,6 +68,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         else {
             
             // Initally hide the map and start async retriving images
+            createLoadingScreen()
             mapView.hidden = true
             curLocBtn.hidden = true
             retrieveBars()
@@ -83,6 +90,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 let span = MKCoordinateSpanMake(0.075, 0.075)
                 let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
                 mapView.setRegion(region, animated: true)
+                initialLocation = "Ames"
             }
             else{
                 setLocation()
@@ -112,6 +120,14 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     }
                 }
             }
+            
+            // Configure the autocomplete table
+//            autoCompleteTable.tableFooterView = UIView(frame: CGRect.zeroRect)
+//            let blurEffect = UIBlurEffect(style: .Dark)
+//            let blurView = UIVisualEffectView(effect: blurEffect)
+//            blurView.setTranslatesAutoresizingMaskIntoConstraints(false)
+//            autoCompleteTable.backgroundView = blurView
+
         }
     }
     
@@ -158,6 +174,22 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
+    func createLoadingScreen() {
+        
+        // Blur the screen dark so we can see loading animation
+        blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.Dark))
+        let blurFrame = CGRect(x: 0, y: listSearchBar.frame.height, width: self.view.frame.width, height: self.view.frame.height)
+        blurView.frame = blurFrame
+        self.view.addSubview(blurView)
+        
+        // Start the loading animation and continue until all bars are loaded
+        let frame = CGRect(x: self.view.frame.width/2 - 25, y: self.view.frame.height/2 + listSearchBar.frame.height - 75, width: 50, height: 50)
+        activityIndicatorView = NVActivityIndicatorView(frame: frame, type: NVActivityIndicatorType.BallSpinFadeLoader)
+        self.view.addSubview(activityIndicatorView)
+        activityIndicatorView.bringSubviewToFront(self.view)
+        activityIndicatorView.startAnimation()
+    }
+    
     func retrieveBars() {
         
         var query = PFQuery(className:"Bars")
@@ -170,6 +202,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let bars = task.result as! NSArray
             for bar in bars {
                 
+                self.barCount = bars.count
                 let name = bar["name"] as! String
                 let lat = bar["lat"] as! NSNumber
                 let long = bar["long"] as! NSNumber
@@ -221,6 +254,8 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                             self.tableView.reloadData()
                             self.mapView.addAnnotation(newBar.annotation)
                             self.mapBars = barsArr
+                            self.autoCompleteBars = NSMutableArray(array: barsArr.copy() as! [BarAnnotation])
+                            self.autoCompleteTable.reloadData()
                             
                             self.setDistances()
                             self.sortBars()
@@ -344,9 +379,16 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     
     func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
-        tapRecognizer = UITapGestureRecognizer(target: self, action: "handleSingleTap:")
-        tapRecognizer.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(tapRecognizer)
+        
+        if barView {
+            tapRecognizer = UITapGestureRecognizer(target: self, action: "handleSingleTap:")
+            tapRecognizer.numberOfTapsRequired = 1
+            self.view.addGestureRecognizer(tapRecognizer)
+        }
+        else {
+            autoCompleteTable.setContentOffset(CGPointZero, animated: false)
+            autoCompleteTable.hidden = false
+        }
     }
     
     
@@ -368,18 +410,34 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         switch segControl.selectedSegmentIndex
         {
             case 0:
+                // Reset autocomplete search
+                autoCompleteBars = NSMutableArray(array: bars.copy() as! [BarAnnotation])
+                autoCompleteTable.hidden = true
+                autoCompleteTable.reloadData()
+                listSearchBar.resignFirstResponder()
+                
                 mapView.hidden = true
                 curLocBtn.hidden = true
                 barView = true
                 tableView.setContentOffset(CGPointZero, animated: false)
+                listSearchBar.placeholder = "Search Bars & Drinks"
             case 1:
                 mapView.hidden = false
                 curLocBtn.hidden = false
                 barView = false
+                listSearchBar.placeholder = "Search Bars"
             default:
+                // Reset autocomplete search
+                autoCompleteBars = NSMutableArray(array: bars.copy() as! [BarAnnotation])
+                autoCompleteTable.hidden = true
+                autoCompleteTable.reloadData()
+                listSearchBar.resignFirstResponder()
+                
                 mapView.hidden = true
                 curLocBtn.hidden = true
                 barView = true
+                listSearchBar.placeholder = "Search Bars & Drinks"
+
         }
         
         tableView.reloadData()
@@ -416,26 +474,31 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         if((locationManager.location.distanceFromLocation(amesLocation) / 1609.344) < 15) {
             let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
             mapView.setRegion(region, animated: true)
+            initialLocation = "Ames"
         }
             
         else if((locationManager.location.distanceFromLocation(cfLocation) / 1609.344) < 30) {
             let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.520700, longitude: -92.438965), span: span)
             mapView.setRegion(region, animated: true)
+            initialLocation = "Cedar Falls"
         }
             
         else if((locationManager.location.distanceFromLocation(icLocation) / 1609.344) < 30) {
             let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.656497, longitude: -91.535339), span: span)
             mapView.setRegion(region, animated: true)
+            initialLocation = "Iowa City"
         }
             
         else if((locationManager.location.distanceFromLocation(dmLocation) / 1609.344) < 30) {
             let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.589883, longitude: -93.624183), span: span)
             mapView.setRegion(region, animated: true)
+            initialLocation = "Des Moines"
         }
             
         else { // Default to Ames location
             let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
             mapView.setRegion(region, animated: true)
+            initialLocation = "Ames"
         }
     }
 
@@ -473,47 +536,32 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.view.removeGestureRecognizer(tapRecognizer)
         
         if !barView {
-            var found = false
-            for bar in bars {
-
-                let barName = bar.name.replace("\'", withString: "")
-                let searchString = searchBar.text.replace("\'", withString: "")
-                let barAnn = bar as! BarAnnotation
-                
-                if barName.rangeOfString(searchString) != nil || barName.lowercaseString.rangeOfString(searchString.lowercaseString) != nil {
-                    found = true
-                    searchBar.resignFirstResponder()
-                    
-                    let span = MKCoordinateSpanMake(0.005, 0.005)
-                    let region = MKCoordinateRegion(center: barAnn.location, span: span)
-                    mapView.setRegion(region, animated: true)
-                    mapView.selectAnnotation(bar.annotation, animated: true)
-                    analytics.barClicked(bar.name, key: "searchQueries")
-                }
-            }
             
-            if !found {
-                let alert = UIAlertView()
-                alert.title = "Bar Not Found"
-                alert.message = "The bar you entered was not found. Please try your search again."
-                alert.addButtonWithTitle("OK")
-                alert.show()
-                searchBar.resignFirstResponder()
-            }
-            else {
-                for bar in removedBars {
-                    if !bars.containsObject(bar) {
-                        bars.addObject(bar)
+            if autoCompleteBars.count == 1 {
+                
+                let selectedBar = autoCompleteBars[0] as! BarAnnotation
+                
+                for bar in bars {
+                    
+                    let barAnn = bar as! BarAnnotation
+                    if barAnn.name.rangeOfString(selectedBar.name) != nil  {
+                        
+                        let span = MKCoordinateSpanMake(0.005, 0.005)
+                        let region = MKCoordinateRegion(center: barAnn.location, span: span)
+                        self.mapView.setRegion(region, animated: true)
+                        self.mapView.selectAnnotation(bar.annotation, animated: true)
+                        analytics.barClicked(bar.name, key: "searchQueries")
+                        break
+                        
                     }
                 }
-
-                removedBars.removeAllObjects()
-                sortBars()
-                tableView.reloadData()
-
+                
+                listSearchBar.text = ""
+                autoCompleteBars = NSMutableArray(array: bars.copy() as! [BarAnnotation])
+                autoCompleteTable.hidden = true
+                autoCompleteTable.reloadData()
+                listSearchBar.resignFirstResponder()
             }
-            
-            searchBar.text = ""
         }
         else {
             
@@ -541,8 +589,9 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 
                 for bar in bars {
                     var b = bar as! BarAnnotation
-
-                    if b.name.lowercaseString.rangeOfString(searchText.lowercaseString) == nil {
+                    
+                    if b.name.lowercaseString.rangeOfString(searchText.lowercaseString) == nil &&
+                        b.deal.lowercaseString.rangeOfString(searchText.lowercaseString) == nil {
                         if !removedBars.containsObject(bar) {
                             removedBars.addObject(bar)
                         }
@@ -558,7 +607,8 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 
                 for bar in removedBars {
                     var b = bar as! BarAnnotation
-                    if !bars.containsObject(bar) && b.name.lowercaseString.rangeOfString(searchText.lowercaseString) != nil{
+                    if !bars.containsObject(bar) && (b.name.lowercaseString.rangeOfString(searchText.lowercaseString) != nil ||
+                        b.deal.lowercaseString.rangeOfString(searchText.lowercaseString) != nil ){
                         bars.addObject(bar)
                     }
                 }
@@ -580,6 +630,8 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             prevSearchStrLen = size
         }
         else {
+            self.view.removeGestureRecognizer(tapRecognizer)
+            
             if count(searchText) == 0 {
                 for bar in removedBars {
                     if !bars.containsObject(bar) {
@@ -590,8 +642,31 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 removedBars.removeAllObjects()
                 sortBars()
                 tableView.reloadData()
+                autoCompleteBars = NSMutableArray(array: bars.copy() as! [BarAnnotation])
+                //autoCompleteTable.hidden = true
+                autoCompleteTable.reloadData()
+            }
+            else {
+                searchAutoCompleteEntriesWithSubstring(searchText)
             }
         }
+    }
+    
+    func searchAutoCompleteEntriesWithSubstring(substring: String) {
+        
+        let filteredResults = NSMutableArray(array: autoCompleteBars.copy() as! [BarAnnotation])
+        autoCompleteBars.removeAllObjects()
+        
+        for annotation in filteredResults {
+            var bar = annotation as! BarAnnotation
+   
+            if bar.name.lowercaseString.rangeOfString(substring.lowercaseString) != nil {
+                autoCompleteBars.addObject(bar)
+            }
+
+        }
+        
+        autoCompleteTable.reloadData()
     }
 
     func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) -> MKAnnotationView! {
@@ -634,66 +709,117 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
  
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        var cell = DealCell()
-        let currentBar = bars[indexPath.row] as! BarAnnotation
+        if tableView != autoCompleteTable {
+            var cell = DealCell()
+            let currentBar = bars[indexPath.row] as! BarAnnotation
 
-        if indexPath.row % 2 == 0 {
-            cell = tableView.dequeueReusableCellWithIdentifier("Bar Cell Shaded", forIndexPath: indexPath) as! DealCell
-            cell.backgroundColor = primary.colorWithAlphaComponent(0.07)
-        }
-        else{
-            cell = tableView.dequeueReusableCellWithIdentifier("Bar Cell", forIndexPath: indexPath) as! DealCell
-        }
+            if indexPath.row % 2 == 0 {
+                cell = tableView.dequeueReusableCellWithIdentifier("Bar Cell Shaded", forIndexPath: indexPath) as! DealCell
+                cell.backgroundColor = primary.colorWithAlphaComponent(0.07)
+            }
+            else{
+                cell = tableView.dequeueReusableCellWithIdentifier("Bar Cell", forIndexPath: indexPath) as! DealCell
+            }
 
-        cell.barName.text = currentBar.name
-        cell.deal.text = currentBar.deal
-        cell.distanceToBar.text = String(format: "%.1f mi", currentBar.distance)
-        
-        if(!ImagesDict.isEmpty && ImagesDict[currentBar.name] != nil) {
-            cell.barImage.image = UIImage(data: ImagesDict[currentBar.name]!)
-        }
-        
-        // Change colors based on theme
-        switch theme {
-            case 0: // Default
-                cell.barName.textColor = primary
-                cell.distanceToBar.textColor = colors.gray
-                break;
-            case 1: // Ames
-                cell.barName.textColor = primary
-                cell.distanceToBar.textColor = secondary
-                break;
-            case 2: // Iowa City
-                cell.barName.textColor = colors.black
-                break;
-            case 3: // Cedar Falls
-                cell.barName.textColor = primary
-                cell.distanceToBar.textColor = secondary
-                break;
-            default:
-                break;
-        }
+            cell.barName.text = currentBar.name
+            cell.deal.text = currentBar.deal
+            cell.distanceToBar.text = String(format: "%.1f mi", currentBar.distance)
+            
+            if(!ImagesDict.isEmpty && ImagesDict[currentBar.name] != nil) {
+                cell.barImage.image = UIImage(data: ImagesDict[currentBar.name]!)
+            }
+            
+            // Change colors based on theme
+            switch theme {
+                case 0: // Default
+                    cell.barName.textColor = primary
+                    cell.distanceToBar.textColor = colors.gray
+                    break;
+                case 1: // Ames
+                    cell.barName.textColor = primary
+                    cell.distanceToBar.textColor = secondary
+                    break;
+                case 2: // Iowa City
+                    cell.barName.textColor = colors.black
+                    break;
+                case 3: // Cedar Falls
+                    cell.barName.textColor = primary
+                    cell.distanceToBar.textColor = secondary
+                    break;
+                default:
+                    break;
+            }
+            
+            if bars.count == barCount {
+                self.activityIndicatorView.stopAnimation()
+                self.blurView.removeFromSuperview()
+            }
 
-        return cell
+            return cell
+        }
+        else {
+            var autoCell = autoCompleteTable.dequeueReusableCellWithIdentifier("AutoCompleteCell") as! UITableViewCell
+            let bar = autoCompleteBars[indexPath.row] as! BarAnnotation
+            autoCell.textLabel?.text = bar.name
+            autoCell.detailTextLabel?.text = "\(bar.distance) mi"
+            autoCell.detailTextLabel?.font = UIFont(name: ".HelveticaNeueDeskInterface-Regular", size: 12.0)
+            return autoCell
+        }
     }
 
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return 80.0
+        if tableView != autoCompleteTable {
+            return 80.0
+        }
+        else {
+            return 44.0
+        }
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return bars.count
+        if tableView != autoCompleteTable {
+            return bars.count
+        }
+        else {
+            return autoCompleteBars.count
+        }
     }
 
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         
-        let cell = tableView.cellForRowAtIndexPath(indexPath) as! DealCell
-        let selectedBar = bars[indexPath.row] as! BarAnnotation
-        
-        detailTown = selectedBar.town
-        distance = "\(selectedBar.distance)"
-        detailName = cell.barName.text!
-        performSegueWithIdentifier("DetailFromList", sender: self)
+        if barView {
+            let cell = tableView.cellForRowAtIndexPath(indexPath) as! DealCell
+            let selectedBar = bars[indexPath.row] as! BarAnnotation
+            
+            detailTown = selectedBar.town
+            distance = "\(selectedBar.distance)"
+            detailName = cell.barName.text!
+            performSegueWithIdentifier("DetailFromList", sender: self)
+        }
+        else {
+            let selectedBar = autoCompleteBars[indexPath.row] as! BarAnnotation
+
+            for bar in bars {
+                
+                let barAnn = bar as! BarAnnotation
+                if barAnn.name.rangeOfString(selectedBar.name) != nil  {
+
+                    let span = MKCoordinateSpanMake(0.005, 0.005)
+                    let region = MKCoordinateRegion(center: barAnn.location, span: span)
+                    self.mapView.setRegion(region, animated: true)
+                    self.mapView.selectAnnotation(bar.annotation, animated: true)
+                    analytics.barClicked(bar.name, key: "searchQueries")
+                    break
+                    
+                }
+            }
+            
+            listSearchBar.text = ""
+            autoCompleteBars = NSMutableArray(array: bars.copy() as! [BarAnnotation])
+            autoCompleteTable.hidden = true
+            autoCompleteTable.reloadData()
+            listSearchBar.resignFirstResponder()
+        }
     }
     
     func mapView(mapView: MKMapView!, annotationView: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
@@ -737,6 +863,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         if segue.identifier == "Settings" {
             let NC = segue.destinationViewController as! UINavigationController
             let SS = NC.topViewController as! Settings
+            SS.initialLocation = initialLocation
             SS.delegate = self
         }
         
@@ -794,6 +921,10 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         var image: UIImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return image
+    }
+    
+    func updateLocation(location: String) {
+        initialLocation = location
     }
     
     func isConnectedToNetwork() -> Bool {

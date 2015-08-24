@@ -13,11 +13,16 @@ import MessageUI
 
 protocol SettingsDelegate {
     func selectLocation(lat: Double, long: Double)
+    func updateLocation(location: String)
 }
 
 class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
 
     @IBOutlet var table: UITableView!
+    @IBOutlet weak var amesCheck: UIImageView!
+    @IBOutlet weak var icCheck: UIImageView!
+    @IBOutlet weak var cfCheck: UIImageView!
+    @IBOutlet weak var dsmCheck: UIImageView!
     @IBOutlet weak var defaultCheck: UIImageView!
     @IBOutlet weak var cyclonesCheck: UIImageView!
     @IBOutlet weak var hawkeyesCheck: UIImageView!
@@ -31,11 +36,14 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
     var coreDataHelper = CoreDataHelper()
     var analytics = Analytics()
     var delegate: SettingsDelegate? = nil
-  
+    var cellExpanded = false
+    var locations = ["Ames", "Iowa City", "Cedar Falls", "DSM"]
+    var initialLocation = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        toggleLoactionChecks(initialLocation)
         theme = coreDataHelper.getInt("Theme", key: "themeNumber")
         switch(theme){
             case 0:
@@ -112,24 +120,66 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
 
+//    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+//        
+//        if indexPath.section == 6 {
+//            var cell = tableView.dequeueReusableCellWithIdentifier("LocationCell") as! UITableViewCell
+//            
+//            //            let bar = autoCompleteBars[indexPath.row] as! BarAnnotation
+//            //            cell.textLabel?.text = bar.name
+//            //            cell.detailTextLabel?.text = "\(bar.distance) mi"
+//            
+//            if cellExpanded {
+//                cell.textLabel?.text = "testing"
+//            }
+//            else {
+//                cell.textLabel?.text = locations[indexPath.row]
+//            }
+//            
+//            cell.detailTextLabel?.font = UIFont(name: ".HelveticaNeueDeskInterface-Regular", size: 12.0)
+//            return cell
+//        }
+//        else {
+//            var cell = tableView.cellForRowAtIndexPath(indexPath)
+//            return cell!
+//        }
+//    }
+    
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         switch indexPath.section {
             case 0:
+//                if cellExpanded {
+//                    cellExpanded = false
+//                }
+//                else {
+//                    cellExpanded = true
+//                }
+//                
+//                tableView.reloadData()
+                
                 // LOCATIONS //
                 switch indexPath.row {
                     case 0: // Ames
+                        toggleLoactionChecks("Ames")
+                        self.delegate?.updateLocation("Ames")
                         self.delegate?.selectLocation(42.035021, long: -93.645)
                         analytics.clicked("Ames")
                         break;
                     case 1: // Iowa City
+                        toggleLoactionChecks("Iowa City")
+                        self.delegate?.updateLocation("Iowa City")
                         self.delegate?.selectLocation(41.656497, long: -91.535339)
                         analytics.clicked("Iowa City")
                         break;
                     case 2: // Cedar Falls
+                        toggleLoactionChecks("Cedar Falls")
+                        self.delegate?.updateLocation("Cedar Falls")
                         self.delegate?.selectLocation(42.520700, long: -92.438965)
                         analytics.clicked("Cedar Falls")
                         break;
                     case 3: // Des Moines
+                        toggleLoactionChecks("Des Moines")
+                        self.delegate?.updateLocation("Des Moines")
                         self.delegate?.selectLocation(41.589883, long: -93.624183)
                         analytics.clicked("Des Moines")
                         break;
@@ -265,6 +315,26 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
 //        .HelveticaNeueDeskInterface-Thin
     }
     
+//    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        switch section {
+//            case 0:
+//                if cellExpanded {
+//                    return locations.count
+//                }
+//                else {
+//                    return 1
+//                }
+//            case 1:
+//                return 4
+//            case 2:
+//                return 5
+//            case 3:
+//                return 2
+//            default:
+//                return 0
+//        }
+//    }
+    
     func configuredMailComposeViewController() -> MFMailComposeViewController {
         let mailComposerVC = MFMailComposeViewController()
         mailComposerVC.mailComposeDelegate = self
@@ -309,6 +379,36 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
             cyclonesCheck.hidden = true
             hawkeyesCheck.hidden = true
             panthersCheck.hidden = false
+            
+        }
+    }
+    
+    func toggleLoactionChecks(pressedCheck: String){
+        
+        print("Toggling \(pressedCheck)")
+        if pressedCheck == "Ames" {
+            amesCheck.hidden = false
+            icCheck.hidden = true
+            cfCheck.hidden = true
+            dsmCheck.hidden = true
+        }
+        else if pressedCheck == "Iowa City" {
+            amesCheck.hidden = true
+            icCheck.hidden = false
+            cfCheck.hidden = true
+            dsmCheck.hidden = true
+        }
+        else if pressedCheck == "Cedar Falls" {
+            amesCheck.hidden = true
+            icCheck.hidden = true
+            cfCheck.hidden = false
+            dsmCheck.hidden = true
+        }
+        else {
+            amesCheck.hidden = true
+            icCheck.hidden = true
+            cfCheck.hidden = true
+            dsmCheck.hidden = false
             
         }
     }
