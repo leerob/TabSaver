@@ -243,10 +243,10 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                         newBar.town = bar["city"] as! String
                         
                         if(deal == "No Deals" && self.showDeals == 1) {
-                            //println(deal)
+                            self.barCount--
                         }
                         else if(deal == "Closed" && self.showClosed == 1) {
-                            //println(deal)
+                            self.barCount--
                         }
                         else {
                             barsArr.addObject(newBar)
@@ -734,20 +734,20 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 case 0: // Default
                     cell.barName.textColor = primary
                     cell.distanceToBar.textColor = colors.gray
-                    break;
+                    break
                 case 1: // Ames
                     cell.barName.textColor = primary
                     cell.distanceToBar.textColor = secondary
-                    break;
+                    break
                 case 2: // Iowa City
                     cell.barName.textColor = colors.black
-                    break;
+                    break
                 case 3: // Cedar Falls
                     cell.barName.textColor = primary
                     cell.distanceToBar.textColor = secondary
-                    break;
+                    break
                 default:
-                    break;
+                    break
             }
             
             if bars.count == barCount {
