@@ -36,8 +36,8 @@ class ClientLogin: UIViewController {
             rememberMeSwitch.setOn(toggle, animated: false)
             
             if(toggle){
-                username.text = arr.objectAtIndex(1) as! String
-                password.text = arr.objectAtIndex(2) as! String
+                username.text = arr.objectAtIndex(1) as? String
+                password.text = arr.objectAtIndex(2) as? String
             }
         }
         
@@ -46,7 +46,7 @@ class ClientLogin: UIViewController {
     
     @IBAction func loginPressed(sender: AnyObject) {
         
-        if(username.text.isEmpty || password.text.isEmpty){
+        if(username.text!.isEmpty || password.text!.isEmpty){
             
             let alert = UIAlertView()
             alert.title = "Please enter a username and password"
@@ -58,13 +58,13 @@ class ClientLogin: UIViewController {
         else{
             
             // Attempt to login
-            self.postLogin(username.text, pass: password.text, url: "http://tabsaver.info/login.php") { (succeeded: Bool) -> () in
+            self.postLogin(username.text!, pass: password.text!, url: "http://tabsaver.info/login.php") { (succeeded: Bool) -> () in
          
                 // Move to the UI thread
                 dispatch_async(dispatch_get_main_queue(), { () -> Void in
                     
                     if(succeeded){
-                        self.coreDataHelper.saveUserPass(self.username.text, pass: self.password.text, rememberMe: self.rememberMeSwitch.on)
+                        self.coreDataHelper.saveUserPass(self.username.text!, pass: self.password.text!, rememberMe: self.rememberMeSwitch.on)
                         self.performSegueWithIdentifier("Login", sender: self)
                     }
                     else{
@@ -123,7 +123,7 @@ class ClientLogin: UIViewController {
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "Login" {
-            var CU = segue.destinationViewController as! ClientUpdate
+            let CU = segue.destinationViewController as! ClientUpdate
             CU.currentBar = currentBar
             CU.currentCity = currentCity
         }

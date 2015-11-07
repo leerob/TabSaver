@@ -24,9 +24,11 @@ class CoreDataHelper{
         object.setValue(value, forKey: key)
         
         var error: NSError?
-        if !managedContext.save(&error)
-        {
-            println("Could not save \(error), \(error?.userInfo)")
+        do {
+            try managedContext.save()
+        } catch let error1 as NSError {
+            error = error1
+            print("Could not save \(error), \(error?.userInfo)")
         }
         
     }
@@ -40,9 +42,11 @@ class CoreDataHelper{
         object.setValue(value, forKey: key)
         
         var error: NSError?
-        if !managedContext.save(&error)
-        {
-            println("Could not save \(error), \(error?.userInfo)")
+        do {
+            try managedContext.save()
+        } catch let error1 as NSError {
+            error = error1
+            print("Could not save \(error), \(error?.userInfo)")
         }
         
     }
@@ -50,15 +54,19 @@ class CoreDataHelper{
     func getInt(entityName: String, key: String) -> Int {
         
         let fetchRequest = NSFetchRequest(entityName: entityName)
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]?
         
-        if let results = fetchedResults
-        {
-            resultArr = results
-        }
-        else
-        {
-            println("Could not fetch \(error), \(error!.userInfo)")
+        do {
+            let fetchedResults = try managedContext.executeFetchRequest(fetchRequest) as? [NSManagedObject]
+            if let results = fetchedResults
+            {
+                resultArr = results
+            }
+            else
+            {
+                print("Could not fetch \(error), \(error!.userInfo)")
+            }
+        } catch {
+            print("ERROR: Executing fetch requested failed.")
         }
         
         if(resultArr.capacity  != 0){
@@ -79,15 +87,19 @@ class CoreDataHelper{
     func getString(entityName: String, key: String) -> String {
 
         let fetchRequest = NSFetchRequest(entityName: entityName)
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]?
-        
-        if let results = fetchedResults
-        {
-            resultArr = results
-        }
-        else
-        {
-            println("Could not fetch \(error), \(error!.userInfo)")
+
+        do {
+            let fetchedResults = try managedContext.executeFetchRequest(fetchRequest) as? [NSManagedObject]
+            if let results = fetchedResults
+            {
+                resultArr = results
+            }
+            else
+            {
+                print("Could not fetch \(error), \(error!.userInfo)")
+            }
+        } catch {
+            print("ERROR: Executing fetch requested failed.")
         }
         
         if(resultArr.capacity  != 0){
@@ -101,15 +113,19 @@ class CoreDataHelper{
     func isFavorite(entityName: String, key: String, barName: String) -> Bool {
 
         let fetchRequest = NSFetchRequest(entityName: entityName)
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]?
         
-        if let results = fetchedResults
-        {
-            resultArr = results
-        }
-        else
-        {
-            println("Could not fetch \(error), \(error!.userInfo)")
+        do {
+            let fetchedResults = try managedContext.executeFetchRequest(fetchRequest) as? [NSManagedObject]
+            if let results = fetchedResults
+            {
+                resultArr = results
+            }
+            else
+            {
+                print("Could not fetch \(error), \(error!.userInfo)")
+            }
+        } catch {
+            print("ERROR: Executing fetch requested failed.")
         }
         
         if(resultArr.capacity != 0){
@@ -127,15 +143,19 @@ class CoreDataHelper{
     func deleteFavorite(entityName: String, key: String, barName: String) {
 
         let fetchRequest = NSFetchRequest(entityName: entityName)
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]?
         
-        if let results = fetchedResults
-        {
-            resultArr = results
-        }
-        else
-        {
-            println("Could not fetch \(error), \(error!.userInfo)")
+        do {
+            let fetchedResults = try managedContext.executeFetchRequest(fetchRequest) as? [NSManagedObject]
+            if let results = fetchedResults
+            {
+                resultArr = results
+            }
+            else
+            {
+                print("Could not fetch \(error), \(error!.userInfo)")
+            }
+        } catch {
+            print("ERROR: Executing fetch requested failed.")
         }
         
         if(resultArr.capacity != 0){
@@ -150,17 +170,21 @@ class CoreDataHelper{
     
     func getFavoritesList(entityName: String, key: String) -> NSMutableArray {
 
-        var favorites = [] as NSMutableArray
+        let favorites = [] as NSMutableArray
         let fetchRequest = NSFetchRequest(entityName: entityName)
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]?
         
-        if let results = fetchedResults
-        {
-            resultArr = results
-        }
-        else
-        {
-            println("Could not fetch \(error), \(error!.userInfo)")
+        do {
+            let fetchedResults = try managedContext.executeFetchRequest(fetchRequest) as? [NSManagedObject]
+            if let results = fetchedResults
+            {
+                resultArr = results
+            }
+            else
+            {
+                print("Could not fetch \(error), \(error!.userInfo)")
+            }
+        } catch {
+            print("ERROR: Executing fetch requested failed.")
         }
         
         if(resultArr.capacity != 0){
@@ -186,29 +210,35 @@ class CoreDataHelper{
         userObj.setValue(rememberMe, forKey: "rememberMe")
         
         var error: NSError?
-        if !managedContext.save(&error)
-        {
-            println("Could not save \(error), \(error?.userInfo)")
+        do {
+            try managedContext.save()
+        } catch let error1 as NSError {
+            error = error1
+            print("Could not save \(error), \(error?.userInfo)")
         }
         
     }
     
     func getUserPass() -> NSMutableArray {
         
-        var retArr = [] as NSMutableArray
+        let retArr = [] as NSMutableArray
         let fetchRequest = NSFetchRequest(entityName:"User")
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]?
         
-        if let results = fetchedResults
-        {
-            resultArr = results
-        }
-        else
-        {
-            println("Could not fetch \(error), \(error!.userInfo)")
+        do {
+            let fetchedResults = try managedContext.executeFetchRequest(fetchRequest) as? [NSManagedObject]
+            if let results = fetchedResults
+            {
+                resultArr = results
+            }
+            else
+            {
+                print("Could not fetch \(error), \(error!.userInfo)")
+            }
+        } catch {
+            print("ERROR: Executing fetch requested failed.")
         }
         
-        if(resultArr.capacity  != 0){
+        if(resultArr.capacity != 0){
 
             retArr.addObject(resultArr[resultArr.count-1].valueForKey("rememberMe") as! Bool)
             retArr.addObject(resultArr[resultArr.count-1].valueForKey("username") as! String)

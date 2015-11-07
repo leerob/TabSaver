@@ -54,6 +54,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var blurView = UIVisualEffectView()
     var barCount = 0
     var initialLocation = ""
+    var shortcutItem = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,6 +65,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             alert.message = "An internet connection is required to use this app. Please reconnect and try again."
             alert.addButtonWithTitle("OK")
             alert.show()
+            analytics.log("Error: Internet Disabled", secondary: "")
         }
         else {
             
@@ -71,9 +73,6 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             createLoadingScreen()
             mapView.hidden = true
             curLocBtn.hidden = true
-            retrieveBars()
-            retrieveImages()
-            retrieveHours()
             
             // Handle user location
             locationManager.requestWhenInUseAuthorization()
@@ -84,17 +83,32 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 locationManager.startUpdatingLocation()
             }
             
-            
-            // Set the span and region for the map (Default to Ames)
+            // Set the span and region for the map
             if(locationManager.location == nil) {
-                let span = MKCoordinateSpanMake(0.075, 0.075)
-                let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
-                mapView.setRegion(region, animated: true)
-                initialLocation = "Ames"
+                
+                let installObj = PFInstallation.currentInstallation()
+                let location = installObj.valueForKey("location")
+                
+                if location == nil {
+                    setMapToCity("Ames")
+                    initialLocation = "Ames"
+                    analytics.log("Location Disabled", secondary: "On Load")
+                    installObj.setValue("Ames", forKey: "location")
+                    installObj.saveInBackground()
+                } else {
+                    let city = location as! String
+                    setMapToCity(city)
+                    initialLocation = city
+                    analytics.log("App Open", secondary: city)
+                }
             }
             else{
                 setLocation()
             }
+            
+            retrieveBars(initialLocation)
+            retrieveImages(initialLocation)
+            retrieveHours(initialLocation)
             
             // Support for settings
             showDeals = coreDataHelper.getInt("ShowNo", key: "show")
@@ -120,14 +134,6 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     }
                 }
             }
-            
-            // Configure the autocomplete table
-//            autoCompleteTable.tableFooterView = UIView(frame: CGRect.zeroRect)
-//            let blurEffect = UIBlurEffect(style: .Dark)
-//            let blurView = UIVisualEffectView(effect: blurEffect)
-//            blurView.setTranslatesAutoresizingMaskIntoConstraints(false)
-//            autoCompleteTable.backgroundView = blurView
-
         }
     }
     
@@ -170,7 +176,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         // Add bars to map
         mapView.removeAnnotations(mapView.annotations)
         for bar in mapBars {
-            mapView.addAnnotation(bar.annotation)
+            mapView.addAnnotation(bar.annotation!!)
         }
     }
     
@@ -190,13 +196,14 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         activityIndicatorView.startAnimation()
     }
     
-    func retrieveBars() {
+    func retrieveBars(location: String) {
         
-        var query = PFQuery(className:"Bars")
+        let query = PFQuery(className:"Bars")
+        query.whereKey("city", equalTo: location)
         findAsync(query).continueWithSuccessBlock {
             (task: BFTask!) -> AnyObject! in
 
-            var barsArr = [] as NSMutableArray
+            let barsArr = [] as NSMutableArray
             self.barsArr = task.result as! NSArray
       
             let bars = task.result as! NSArray
@@ -209,14 +216,14 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 
                 // Query this bar's deals
                 var deal = ""
-                var query = PFQuery(className:"Deals")
+                let query = PFQuery(className:"Deals")
                 query.whereKey("name", equalTo: name)
                 self.findAsync(query).continueWithSuccessBlock {
                     (task: BFTask!) -> AnyObject! in
                     
                     let bars = task.result as! NSArray
                     let dealArr = bars[0][self.getDayOfWeek()] as! [String]
-                    deal = ", ".join(dealArr)
+                    deal = dealArr.joinWithSeparator(", ")
                     
                     // Create deals array to pass to detail page
                     let sun = bars[0]["Sunday"] as! [String]
@@ -226,13 +233,13 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     let thu = bars[0]["Thursday"] as! [String]
                     let fri = bars[0]["Friday"] as! [String]
                     let sat = bars[0]["Saturday"] as! [String]
-                    self.DealsDict[name] = [", ".join(sun),
-                                            ", ".join(mon),
-                                            ", ".join(tue),
-                                            ", ".join(wed),
-                                            ", ".join(thu),
-                                            ", ".join(fri),
-                                            ", ".join(sat)]
+                    self.DealsDict[name] = [sun.joinWithSeparator(", "),
+                                            mon.joinWithSeparator(", "),
+                                            tue.joinWithSeparator(", "),
+                                            wed.joinWithSeparator(", "),
+                                            thu.joinWithSeparator(", "),
+                                            fri.joinWithSeparator(", "),
+                                            sat.joinWithSeparator(", ")]
                     
                     return nil
                     
@@ -268,11 +275,10 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
 
-    func retrieveImages() {
+    func retrieveImages(location: String) {
         
-        var image: UIImage?
         let query = PFQuery(className: "BarPhotos")
-        
+        query.whereKey("city", equalTo: location)
         query.findObjectsInBackgroundWithBlock {
             (objects: [AnyObject]?, error: NSError?) -> Void in
             
@@ -300,7 +306,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                                             if barAnn.title! == barName {
                                                 let scaledImage = UIImageView(image: self.scaleImage(UIImage(data: imageData)!, newSize: CGSizeMake(45, 45)))
                                                 if(view != nil){
-                                                    view.leftCalloutAccessoryView = scaledImage
+                                                    view!.leftCalloutAccessoryView = scaledImage
                                                 }
                                             }
                                         }
@@ -312,14 +318,15 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 }
             } else {
                 // Log details of the failure
-                println("Error: \(error!) \(error!.userInfo!)")
+                self.analytics.log("Error: Retrieving Images", secondary: error!.localizedDescription)
             }
         }
     }
     
-    func retrieveHours() {
+    func retrieveHours(location: String) {
         
-        var query = PFQuery(className:"BarHours")
+        let query = PFQuery(className:"BarHours")
+        query.whereKey("city", equalTo: location)
         query.findObjectsInBackgroundWithBlock {
             (objects: [AnyObject]?, error: NSError?) -> Void in
             
@@ -350,11 +357,11 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 }
             } else {
                 // Log details of the failure
-                println("Error: \(error!) \(error!.userInfo!)")
+                self.analytics.log("Error: Retrieving Hours", secondary: error!.localizedDescription)
             }
         }
     }
-
+    
     func changeTheme() {
         
         let navItem = navigationController?.navigationBar;
@@ -404,6 +411,15 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         tableView.reloadData()
         refreshControl.endRefreshing()
     }
+    
+    func goToList() {
+        segControl.selectedSegmentIndex = 1
+        mapView.hidden = false
+        curLocBtn.hidden = false
+        barView = false
+        listSearchBar.placeholder = "Search Bars"
+        tableView.reloadData()
+    }
 
     @IBAction func indexChanged(sender: UISegmentedControl) {
         
@@ -421,11 +437,13 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 barView = true
                 tableView.setContentOffset(CGPointZero, animated: false)
                 listSearchBar.placeholder = "Search Bars & Drinks"
+                analytics.log("Selected", secondary: "List")
             case 1:
                 mapView.hidden = false
                 curLocBtn.hidden = false
                 barView = false
                 listSearchBar.placeholder = "Search Bars"
+                analytics.log("Selected", secondary: "Map")
             default:
                 // Reset autocomplete search
                 autoCompleteBars = NSMutableArray(array: bars.copy() as! [BarAnnotation])
@@ -451,55 +469,99 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             alert.message = "Location must be enabled to view your current location."
             alert.addButtonWithTitle("OK")
             alert.show()
+            analytics.log("Error: Location Disabled", secondary: "Current Location")
         }
         else {
-            selectLocation(locationManager.location.coordinate.latitude, long: locationManager.location.coordinate.longitude)
+            selectLocation(locationManager.location!.coordinate.latitude, long: locationManager.location!.coordinate.longitude)
+            analytics.log("Selected", secondary: "Current Location")
         }
     }
     
     func selectLocation(lat: Double, long: Double) {
-        let span = MKCoordinateSpanMake(0.075, 0.075)
+        let span = MKCoordinateSpanMake(0.03, 0.03)
         let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: lat, longitude: long), span: span)
         mapView.setRegion(region, animated: true)
     }
     
     func setLocation() {
         
-        let span = MKCoordinateSpanMake(0.075, 0.075)
         let amesLocation = CLLocation(latitude: 42.035021, longitude: -93.645)
         let cfLocation = CLLocation(latitude: 42.520700, longitude: -92.438965)
         let icLocation = CLLocation(latitude: 41.656497, longitude: -91.535339)
         let dmLocation = CLLocation(latitude: 41.589883, longitude: -93.624183)
+        let moLocation = CLLocation(latitude: 41.506582, longitude: -90.515497)
+        let tmLocation = CLLocation(latitude: 33.424881, longitude: -111.939431)
         
-        if((locationManager.location.distanceFromLocation(amesLocation) / 1609.344) < 15) {
-            let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
-            mapView.setRegion(region, animated: true)
+        if((locationManager.location!.distanceFromLocation(amesLocation) / 1609.344) < 15) {
+            setMapToCity("Ames")
             initialLocation = "Ames"
+            analytics.log("App Open", secondary: "Ames")
         }
             
-        else if((locationManager.location.distanceFromLocation(cfLocation) / 1609.344) < 30) {
-            let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.520700, longitude: -92.438965), span: span)
-            mapView.setRegion(region, animated: true)
+        else if((locationManager.location!.distanceFromLocation(cfLocation) / 1609.344) < 30) {
+            setMapToCity("Cedar Falls")
             initialLocation = "Cedar Falls"
+            analytics.log("App Open", secondary: "Cedar Falls")
         }
             
-        else if((locationManager.location.distanceFromLocation(icLocation) / 1609.344) < 30) {
-            let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.656497, longitude: -91.535339), span: span)
-            mapView.setRegion(region, animated: true)
+        else if((locationManager.location!.distanceFromLocation(icLocation) / 1609.344) < 30) {
+            setMapToCity("Iowa City")
             initialLocation = "Iowa City"
+            analytics.log("App Open", secondary: "Iowa City")
         }
             
-        else if((locationManager.location.distanceFromLocation(dmLocation) / 1609.344) < 30) {
-            let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.589883, longitude: -93.624183), span: span)
-            mapView.setRegion(region, animated: true)
+        else if((locationManager.location!.distanceFromLocation(dmLocation) / 1609.344) < 30) {
+            setMapToCity("Des Moines")
             initialLocation = "Des Moines"
+            analytics.log("App Open", secondary: "Des Moines")
+        }
+            
+        else if((locationManager.location!.distanceFromLocation(moLocation) / 1609.344) < 30) {
+            setMapToCity("Moline")
+            initialLocation = "Moline"
+            analytics.log("App Open", secondary: "Moline")
+        }
+            
+        else if((locationManager.location!.distanceFromLocation(tmLocation) / 1609.344) < 100) {
+            setMapToCity("Tempe")
+            initialLocation = "Tempe"
+            analytics.log("App Open", secondary: "Tempe")
         }
             
         else { // Default to Ames location
-            let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
-            mapView.setRegion(region, animated: true)
+            setMapToCity("Ames")
             initialLocation = "Ames"
+            analytics.log("App Open", secondary: "Ames")
         }
+        
+        let installObj = PFInstallation.currentInstallation()
+        installObj.setValue(initialLocation, forKey: "location")
+        installObj.saveInBackground()
+        
+        // At this point we have the location, so we are able to query the taxi call
+        handleShortcutItem()
+    }
+    
+    func setMapToCity(city: String) {
+        
+        let span = MKCoordinateSpanMake(0.075, 0.075)
+        var region = MKCoordinateRegion()
+        
+        if city == "Ames" {
+            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
+        } else if city == "Cedar Falls" {
+            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.520700, longitude: -92.438965), span: span)
+        } else if city == "Iowa City" {
+            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.656497, longitude: -91.535339), span: span)
+        } else if city == "Des Moines" {
+            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.589883, longitude: -93.624183), span: span)
+        } else if city == "Moline" {
+            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.506582, longitude: -90.515497), span: span)
+        } else if city == "Tempe" {
+            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 33.424881, longitude: -111.939431), span: span)
+        }
+        
+        mapView.setRegion(region, animated: true)
     }
 
     func setDistances() {
@@ -509,7 +571,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 currentBar.distance = 0
             }
             else {
-                let dist = locationManager.location.distanceFromLocation(currentBar.loc) / 1609.344
+                let dist = locationManager.location!.distanceFromLocation(currentBar.loc) / 1609.344
                 currentBar.distance = Double(round(10*dist)/10)
             }
         }
@@ -532,7 +594,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
 
-    func searchBarSearchButtonClicked( searchBar: UISearchBar) {
+    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
         self.view.removeGestureRecognizer(tapRecognizer)
         
         if !barView {
@@ -549,7 +611,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                         let span = MKCoordinateSpanMake(0.005, 0.005)
                         let region = MKCoordinateRegion(center: barAnn.location, span: span)
                         self.mapView.setRegion(region, animated: true)
-                        self.mapView.selectAnnotation(bar.annotation, animated: true)
+                        self.mapView.selectAnnotation(bar.annotation!!, animated: true)
                         analytics.barClicked(bar.name, key: "searchQueries")
                         break
                         
@@ -580,15 +642,15 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
         
-        var matchedBars = [] as NSMutableArray
+        let matchedBars = [] as NSMutableArray
         
         if barView {
             
-            let size = count(searchText)
+            let size = searchText.characters.count
             if  size != 0 && size > prevSearchStrLen {
                 
                 for bar in bars {
-                    var b = bar as! BarAnnotation
+                    let b = bar as! BarAnnotation
                     
                     if b.name.lowercaseString.rangeOfString(searchText.lowercaseString) == nil &&
                         b.deal.lowercaseString.rangeOfString(searchText.lowercaseString) == nil {
@@ -606,7 +668,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             else if size != 0 && size < prevSearchStrLen {
                 
                 for bar in removedBars {
-                    var b = bar as! BarAnnotation
+                    let b = bar as! BarAnnotation
                     if !bars.containsObject(bar) && (b.name.lowercaseString.rangeOfString(searchText.lowercaseString) != nil ||
                         b.deal.lowercaseString.rangeOfString(searchText.lowercaseString) != nil ){
                         bars.addObject(bar)
@@ -632,7 +694,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         else {
             self.view.removeGestureRecognizer(tapRecognizer)
             
-            if count(searchText) == 0 {
+            if searchText.characters.count == 0 {
                 for bar in removedBars {
                     if !bars.containsObject(bar) {
                         bars.addObject(bar)
@@ -658,7 +720,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         autoCompleteBars.removeAllObjects()
         
         for annotation in filteredResults {
-            var bar = annotation as! BarAnnotation
+            let bar = annotation as! BarAnnotation
    
             if bar.name.lowercaseString.rangeOfString(substring.lowercaseString) != nil {
                 autoCompleteBars.addObject(bar)
@@ -669,7 +731,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         autoCompleteTable.reloadData()
     }
 
-    func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) -> MKAnnotationView! {
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         
         if annotation is MKUserLocation { // Draw blue dot for user location
             return nil
@@ -682,7 +744,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             pinView!.canShowCallout = true
             
             // Add detail button to right callout
-            var calloutButton = UIButton.buttonWithType(.DetailDisclosure) as! UIButton
+            let calloutButton = UIButton(type: .DetailDisclosure)
             calloutButton.tintColor = UIColor.blackColor()
             pinView!.rightCalloutAccessoryView = calloutButton
         }
@@ -691,7 +753,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
         
         // If the bar is a favorite, make the pin image a star
-        if(coreDataHelper.isFavorite("Favorites", key: "list", barName: pinView.annotation.title!) && coreDataHelper.getInt("ShowFav", key: "show") == 0){
+        if(coreDataHelper.isFavorite("Favorites", key: "list", barName: pinView!.annotation!.title!!) && coreDataHelper.getInt("ShowFav", key: "show") == 0){
             pinView!.image = scaleImage(UIImage(named: "star2.png")!, newSize: CGSizeMake(30, 30))
         }
         else{
@@ -699,8 +761,8 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
         
         // Load the image from the array retrieved from Parse
-        if(!ImagesDict.isEmpty && ImagesDict[annotation.title!] != nil){
-            let scaledImage = UIImageView(image: scaleImage(UIImage(data: ImagesDict[annotation.title!]!)!, newSize: CGSizeMake(45, 45)))
+        if(!ImagesDict.isEmpty && ImagesDict[annotation.title!!] != nil){
+            let scaledImage = UIImageView(image: scaleImage(UIImage(data: ImagesDict[annotation.title!!]!)!, newSize: CGSizeMake(45, 45)))
             pinView!.leftCalloutAccessoryView = scaledImage
         }
         
@@ -758,12 +820,40 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             return cell
         }
         else {
-            var autoCell = autoCompleteTable.dequeueReusableCellWithIdentifier("AutoCompleteCell") as! UITableViewCell
+            let autoCell = autoCompleteTable.dequeueReusableCellWithIdentifier("AutoCompleteCell") as UITableViewCell!
             let bar = autoCompleteBars[indexPath.row] as! BarAnnotation
             autoCell.textLabel?.text = bar.name
             autoCell.detailTextLabel?.text = "\(bar.distance) mi"
             autoCell.detailTextLabel?.font = UIFont(name: ".HelveticaNeueDeskInterface-Regular", size: 12.0)
             return autoCell
+        }
+    }
+    
+    func handleShortcutItem() {
+
+        if shortcutItem == "Call Taxi" {
+            let query = PFQuery(className: "Locations")
+            query.whereKey("cityName", equalTo: initialLocation)
+            findAsync(query).continueWithSuccessBlock {
+                (task: BFTask!) -> AnyObject! in
+                
+                let arr = task.result as! NSArray
+                let city = arr[0] as! PFObject
+                let taxiNumber = city.valueForKey("taxiNumber") as! String
+                let url = NSURL(string: "tel://\(taxiNumber)")!
+                UIApplication.sharedApplication().openURL(url)
+                
+                return nil
+            }
+        } else if shortcutItem == "Current Location" {
+            goToList()
+            goToCurrentLoc(self)
+        } else if shortcutItem == "Closest Bar" {
+//            
+//            let row = NSIndexPath(forRow: 0, inSection: 0)
+//            self.tableView.selectRowAtIndexPath(row, animated: false, scrollPosition: UITableViewScrollPosition.None)
+//            self.tableView(self.tableView, didSelectRowAtIndexPath: row)
+//            
         }
     }
 
@@ -807,7 +897,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     let span = MKCoordinateSpanMake(0.005, 0.005)
                     let region = MKCoordinateRegion(center: barAnn.location, span: span)
                     self.mapView.setRegion(region, animated: true)
-                    self.mapView.selectAnnotation(bar.annotation, animated: true)
+                    self.mapView.selectAnnotation(bar.annotation!!, animated: true)
                     analytics.barClicked(bar.name, key: "searchQueries")
                     break
                     
@@ -822,20 +912,20 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
-    func mapView(mapView: MKMapView!, annotationView: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+    func mapView(mapView: MKMapView, annotationView: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         
         if control == annotationView.rightCalloutAccessoryView {
-            detailName = annotationView.annotation.title!
+            detailName = annotationView.annotation!.title!!
             for bar in bars {
                 if bar.name == detailName {
-                    var curBar = bar as! BarAnnotation
+                    let curBar = bar as! BarAnnotation
                     detailTown = curBar.town
                     
                     if locationManager.location == nil {
                         distance = "0.0"
                     }
                     else {
-                        let dist = locationManager.location.distanceFromLocation(curBar.loc) / 1609.344
+                        let dist = locationManager.location!.distanceFromLocation(curBar.loc) / 1609.344
                         distance = "\(Double(round(10*dist)/10))"
                     }
                 }
@@ -846,7 +936,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "DetailFromList" {
-            var BD = segue.destinationViewController as! BarDetail
+            let BD = segue.destinationViewController as! BarDetail
             BD.barsArr = barsArr
             BD.detailName = detailName
             BD.detailTown = detailTown
@@ -865,6 +955,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let SS = NC.topViewController as! Settings
             SS.initialLocation = initialLocation
             SS.delegate = self
+            analytics.clicked("Settings Menu")
         }
         
         self.view.removeGestureRecognizer(tapRecognizer)
@@ -877,18 +968,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     func goToSettings() {
         performSegueWithIdentifier("Settings", sender: self)
     }
-    
-    func getJSON(urlToRequest: String) -> NSData {
-        return NSData(contentsOfURL: NSURL(string: urlToRequest)!)!
-    }
-    
-    func parseJSON(inputData: NSData) -> Array<NSDictionary>{
-        var error: NSError?
-        var arr = NSJSONSerialization.JSONObjectWithData(inputData, options: NSJSONReadingOptions.MutableContainers, error: &error) as! Array<NSDictionary>
-        
-        return arr
-    }
-    
+
     func scaleImage(image: UIImage, newSize: CGSize) -> UIImage {
         
         var scaledSize = newSize
@@ -914,42 +994,46 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func getImageWithColor(color: UIColor, size: CGSize) -> UIImage {
-        var rect = CGRectMake(0, 0, size.width, size.height)
+        let rect = CGRectMake(0, 0, size.width, size.height)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
         color.setFill()
         UIRectFill(rect)
-        var image: UIImage = UIGraphicsGetImageFromCurrentImageContext()
+        let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return image
     }
     
     func updateLocation(location: String) {
         initialLocation = location
+        retrieveBars(initialLocation)
+        retrieveImages(initialLocation)
+        retrieveHours(initialLocation)
     }
     
     func isConnectedToNetwork() -> Bool {
         
-        var zeroAddress = sockaddr_in(sin_len: 0, sin_family: 0, sin_port: 0, sin_addr: in_addr(s_addr: 0), sin_zero: (0, 0, 0, 0, 0, 0, 0, 0))
+        var zeroAddress = sockaddr_in()
         zeroAddress.sin_len = UInt8(sizeofValue(zeroAddress))
         zeroAddress.sin_family = sa_family_t(AF_INET)
         
-        let defaultRouteReachability = withUnsafePointer(&zeroAddress) {
-            SCNetworkReachabilityCreateWithAddress(nil, UnsafePointer($0)).takeRetainedValue()
-        }
-        
-        var flags: SCNetworkReachabilityFlags = 0
-        if SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) == 0 {
+        guard let defaultRouteReachability = withUnsafePointer(&zeroAddress, {
+            SCNetworkReachabilityCreateWithAddress(nil, UnsafePointer($0))
+        }) else {
             return false
         }
         
-        let isReachable = (flags & UInt32(kSCNetworkFlagsReachable)) != 0
-        let needsConnection = (flags & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+        var flags : SCNetworkReachabilityFlags = []
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) {
+            return false
+        }
         
-        return (isReachable && !needsConnection) ? true : false
+        let isReachable = flags.contains(.Reachable)
+        let needsConnection = flags.contains(.ConnectionRequired)
+        return (isReachable && !needsConnection)
     }
     
     func findAsync(query:PFQuery) -> BFTask {
-        var task = BFTaskCompletionSource()
+        let task = BFTaskCompletionSource()
         query.findObjectsInBackgroundWithBlock {
             (objects, error) -> Void in
             if error == nil {
@@ -991,7 +1075,7 @@ extension UINavigationBar {
             return (view as! UIImageView)
         }
         
-        let subviews = (view.subviews as! [UIView])
+        let subviews = (view.subviews )
         for subview: UIView in subviews {
             if let imageView: UIImageView = hairlineImageViewInNavigationBar(subview) {
                 return imageView

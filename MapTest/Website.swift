@@ -51,7 +51,7 @@ class Website: UIViewController, UIActionSheetDelegate {
                 break;
             // Open in safari
             case 1:
-                var url:NSURL = NSURL(string: self.website)!
+                let url:NSURL = NSURL(string: self.website)!
                 UIApplication.sharedApplication().openURL(url)
                 break;
             default:

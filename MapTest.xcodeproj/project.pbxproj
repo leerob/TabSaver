@@ -84,59 +84,12 @@
 		9BD2D6D11B00325D0027B2F8 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BD2D6D01B00325D0027B2F8 /* Social.framework */; };
 		9BD2D6D31B0032650027B2F8 /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BD2D6D21B0032650027B2F8 /* Accounts.framework */; };
 		9BD2D6DB1B08337B0027B2F8 /* star2.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BD2D6DA1B08337B0027B2F8 /* star2.png */; };
-		9BD2D70E1B09064A0027B2F8 /* Armchair.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BD2D7051B09063E0027B2F8 /* Armchair.framework */; };
-		9BD2D70F1B09064A0027B2F8 /* Armchair.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9BD2D7051B09063E0027B2F8 /* Armchair.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9BF2700B1B2CDBF500ADCF42 /* System San Francisco Display Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9BA20B3C1B1A881400A62F73 /* System San Francisco Display Medium.ttf */; };
 		9BF2700C1B2CDBF800ADCF42 /* System San Francisco Display Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9BA20B3D1B1A881400A62F73 /* System San Francisco Display Regular.ttf */; };
 		9BF2700D1B2CDBFB00ADCF42 /* System San Francisco Display Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9BA20B3E1B1A881400A62F73 /* System San Francisco Display Thin.ttf */; };
 		9BF2700E1B2CDBFE00ADCF42 /* System San Francisco Display Ultralight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9BA20B3F1B1A881400A62F73 /* System San Francisco Display Ultralight.ttf */; };
 		9BF5E57C1B5C974D000B719E /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF5E57B1B5C974D000B719E /* Analytics.swift */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		9BD2D7041B09063E0027B2F8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E6D8B8B519C7274F001AD043;
-			remoteInfo = Armchair;
-		};
-		9BD2D7061B09063E0027B2F8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E6D8B8F919C756A4001AD043;
-			remoteInfo = ArmchairMac;
-		};
-		9BD2D7081B09063E0027B2F8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E6A0AF6519C9CFF400C3A7DC;
-			remoteInfo = ArmchairLocalizable;
-		};
-		9BD2D70A1B09063E0027B2F8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E6F6159419C9FFDA00C0B51C;
-			remoteInfo = ArmchairLocalizableMac;
-		};
-		9BD2D70C1B09063E0027B2F8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E6D8B92819C880A9001AD043;
-			remoteInfo = ArmchairTests;
-		};
-		9BD2D7101B09064A0027B2F8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = F8111E3219A95C8B0040E7D1;
-			remoteInfo = Armchair;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		9BA8EF611AAD5EE900962C81 /* CopyFiles */ = {
@@ -145,7 +98,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9BD2D70F1B09064A0027B2F8 /* Armchair.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,7 +189,6 @@
 		9BD2D6D01B00325D0027B2F8 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		9BD2D6D21B0032650027B2F8 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		9BD2D6DA1B08337B0027B2F8 /* star2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = star2.png; sourceTree = "<group>"; };
-		9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Armchair.xcodeproj; path = Armchair/Armchair.xcodeproj; sourceTree = "<group>"; };
 		9BF5E57B1B5C974D000B719E /* Analytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -261,7 +212,6 @@
 				9BBFDEBB1A32513A00AF510D /* MapKit.framework in Frameworks */,
 				9B9887091AEF2CC000DA09F8 /* Bolts.framework in Frameworks */,
 				9B98870A1AEF2CC100DA09F8 /* Parse.framework in Frameworks */,
-				9BD2D70E1B09064A0027B2F8 /* Armchair.framework in Frameworks */,
 				9B452BD31B15698A00A453FA /* ParseUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -395,7 +345,6 @@
 		9BBFDE8C1A32511D00AF510D = {
 			isa = PBXGroup;
 			children = (
-				9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */,
 				9BA20B401B1A883100A62F73 /* Fonts */,
 				9BAC80011AFFC83500C3F964 /* Model */,
 				9BAC80021AFFC83C00C3F964 /* Views */,
@@ -450,18 +399,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		9BD2D6FD1B09063E0027B2F8 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				9BD2D7051B09063E0027B2F8 /* Armchair.framework */,
-				9BD2D7071B09063E0027B2F8 /* Armchair.framework */,
-				9BD2D7091B09063E0027B2F8 /* Armchair.bundle */,
-				9BD2D70B1B09063E0027B2F8 /* Armchair.bundle */,
-				9BD2D70D1B09063E0027B2F8 /* ArmchairTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -477,7 +414,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				9BD2D7111B09064A0027B2F8 /* PBXTargetDependency */,
 			);
 			name = MapTest;
 			productName = MapTest;
@@ -490,7 +426,9 @@
 		9BBFDE8D1A32511D00AF510D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastSwiftMigration = 0700;
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Lee Robinson";
 				TargetAttributes = {
 					9BBFDE941A32511D00AF510D = {
@@ -530,56 +468,12 @@
 			mainGroup = 9BBFDE8C1A32511D00AF510D;
 			productRefGroup = 9BBFDE961A32511D00AF510D /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 9BD2D6FD1B09063E0027B2F8 /* Products */;
-					ProjectRef = 9BD2D6FC1B09063E0027B2F8 /* Armchair.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				9BBFDE941A32511D00AF510D /* MapTest */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		9BD2D7051B09063E0027B2F8 /* Armchair.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Armchair.framework;
-			remoteRef = 9BD2D7041B09063E0027B2F8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		9BD2D7071B09063E0027B2F8 /* Armchair.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Armchair.framework;
-			remoteRef = 9BD2D7061B09063E0027B2F8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		9BD2D7091B09063E0027B2F8 /* Armchair.bundle */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = Armchair.bundle;
-			remoteRef = 9BD2D7081B09063E0027B2F8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		9BD2D70B1B09063E0027B2F8 /* Armchair.bundle */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = Armchair.bundle;
-			remoteRef = 9BD2D70A1B09063E0027B2F8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		9BD2D70D1B09063E0027B2F8 /* ArmchairTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = ArmchairTests.xctest;
-			remoteRef = 9BD2D70C1B09063E0027B2F8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9BBFDE931A32511D00AF510D /* Resources */ = {
@@ -667,14 +561,6 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		9BD2D7111B09064A0027B2F8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Armchair;
-			targetProxy = 9BD2D7101B09064A0027B2F8 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin PBXVariantGroup section */
 		9BBFDE9E1A32511D00AF510D /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
@@ -718,6 +604,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -732,7 +619,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -769,7 +656,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -785,6 +672,7 @@
 				CODE_SIGN_ENTITLEMENTS = MapTest/tabsaver.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -794,6 +682,7 @@
 				INFOPLIST_FILE = MapTest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = tabsaver;
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/bridgingHeader.h";
@@ -811,6 +700,7 @@
 				CODE_SIGN_ENTITLEMENTS = MapTest/tabsaver.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -820,6 +710,7 @@
 				INFOPLIST_FILE = MapTest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = tabsaver;
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/bridgingHeader.h";

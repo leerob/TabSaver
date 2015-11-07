@@ -39,7 +39,7 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
         self.navigationItem.leftBarButtonItem = doneButton
     }
     
-    func pickerView(pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusingView view: UIView!) -> UIView {
+    func pickerView(pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusingView view: UIView?) -> UIView {
         
         let pickerLabel = UILabel()
         let titleData = pickerData[row]
@@ -52,7 +52,7 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
     @IBAction func saveDeals(sender: AnyObject) {
         
         // No Deal Entered
-        if(firstDeal.text.isEmpty){
+        if(firstDeal.text!.isEmpty){
             let alert = UIAlertView()
             alert.title = "Deal Not Entered"
             alert.message = "Please enter at least one deal."
@@ -83,7 +83,7 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
                     if(succeeded){
                         
                         if(self.pushSwitch.on){
-                            self.sendPushNotification(self.pushDeal.text)
+                            self.sendPushNotification(self.pushDeal.text!)
                         }
                         
                         alert.title = "Update Successful!"
@@ -105,21 +105,21 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
     
     func postUpdate(url : String, postCompleted : (succeeded: Bool) -> ()) {
         
-        var request = NSMutableURLRequest(URL: NSURL(string: url)!)
+        let request = NSMutableURLRequest(URL: NSURL(string: url)!)
         request.HTTPMethod = "POST"
         var success = 0
         
         var postString = "day=\(currentDay)&deal1=\(firstDeal.text)&city=\(currentCity)&bar=\(currentBar)"
-        if(!secondDeal.text.isEmpty){
+        if(!secondDeal.text!.isEmpty){
             postString += "&deal2=\(secondDeal.text)"
         }
-        if(!thirdDeal.text.isEmpty){
+        if(!thirdDeal.text!.isEmpty){
             postString += "&deal3=\(thirdDeal.text)"
         }
-        if(!fourthDeal.text.isEmpty){
+        if(!fourthDeal.text!.isEmpty){
             postString += "&deal4=\(fourthDeal.text)"
         }
-        if(!fifthDeal.text.isEmpty){
+        if(!fifthDeal.text!.isEmpty){
             postString += "&deal5=\(fifthDeal.text)"
         }
         
@@ -137,7 +137,7 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
                 return
             }
 
-            let jsonData = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers , error: nil) as! NSDictionary
+            let jsonData = (try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers )) as! NSDictionary
             success = jsonData["Success"] as! Int
             
             if(success == 1){
@@ -153,11 +153,11 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
     
     func getDealsForDay(day: String, url : String, postCompleted : (succeeded: Bool) -> ()) {
         
-        var request = NSMutableURLRequest(URL: NSURL(string: url)!)
+        let request = NSMutableURLRequest(URL: NSURL(string: url)!)
         request.HTTPMethod = "POST"
         var success = 0
         
-        var postString = "day=\(day)&city=\(currentCity)&bar=\(currentBar)"
+        let postString = "day=\(day)&city=\(currentCity)&bar=\(currentBar)"
         
         request.HTTPBody = postString.dataUsingEncoding(NSUTF8StringEncoding)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) {
@@ -173,12 +173,12 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
                 return
             }
 
-            let jsonData = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers , error: nil) as! NSDictionary
+            let jsonData = (try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers )) as! NSDictionary
             success = jsonData["Success"] as! Int
             
             if(success == 1){
                 for index in 1...10 {
-                    var deal = jsonData["\(index)"] as! String
+                    let deal = jsonData["\(index)"] as! String
                     self.dealsArr[index-1] = deal
                 }
 
@@ -205,7 +205,7 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
         push.sendPushInBackgroundWithBlock({ (succeeded,e) -> Void in
             
             if let error = e {
-                println("Error:  (error.localizedDescription)")
+                print("Error:  \(error.localizedDescription)")
             }
         })
     }
@@ -224,7 +224,7 @@ class ClientUpdate: UITableViewController, UIPickerViewDataSource, UIPickerViewD
     }
     
     
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String! {
+    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return pickerData[row]
     }
     

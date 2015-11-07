@@ -13,7 +13,7 @@ import MapKit
 import MessageUI
 
 
-class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, UIScrollViewDelegate, MFMailComposeViewControllerDelegate {
+class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, MFMailComposeViewControllerDelegate {
 
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var barName: UILabel!
@@ -44,9 +44,11 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
     var thu = ""
     var fri = ""
     var sat = ""
+    var dayOfWeekString = ""
     
     var detailTown = ""
     var detailName = ""
+    var detailState = ""
     var distance = ""
     var foursquareID = ""
     var barsArr = [] as NSArray
@@ -88,17 +90,18 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                 fri = dealsArr[5]
                 sat = dealsArr[6]
                 address.text = bar["address"] as? String
-                address.text = address.text! + "\n" + detailTown + ", IA"
+                detailState = bar["state"] as! String
+                address.text = address.text! + "\n" + detailTown + ", " + detailState
                 website.text = bar["website"] as? String
                 foursquareID = bar["foursquare"] as! String
                 name = barName
                 rawNumber = bar["number"] as! NSString
                 
                 if rawNumber == "No Number" {
-                    number.text = rawNumber as? String
+                    number.text = rawNumber as String
                 }
                 else{
-                    number.text = formatPhoneNumber(rawNumber) as? String
+                    number.text = formatPhoneNumber(rawNumber) as String
                 }
                 
                 let span = MKCoordinateSpanMake(0.005, 0.005)
@@ -125,16 +128,16 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
         let currDate = NSDate()
         let twoHours = 2 * 60 * 60 as NSTimeInterval
         let newDate = currDate.dateByAddingTimeInterval(-twoHours)
-        let dayOfWeekString = dateFormatter.stringFromDate(newDate)
+        dayOfWeekString = dateFormatter.stringFromDate(newDate)
         
         dailyDeals.text = getDailyDealStr(dayOfWeekString)
         barName.text = name
         distanceToBar.text = distance + " miles"
         
         // Add button
-        var bigimg = UIImage(named: "star-50.png")
-        var img = scaleImage(bigimg!, newSize: CGSize(width: 25.0, height: 25.0))
-        var button = UIBarButtonItem(image: img, style: UIBarButtonItemStyle.Plain, target: self, action: "createFavorite")
+        let bigimg = UIImage(named: "star-50.png")
+        let img = scaleImage(bigimg!, newSize: CGSize(width: 25.0, height: 25.0))
+        let button = UIBarButtonItem(image: img, style: UIBarButtonItemStyle.Plain, target: self, action: "createFavorite")
         self.navigationItem.rightBarButtonItem = button
 
         
@@ -162,7 +165,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
         image!.layer.insertSublayer(gradient, atIndex:0)
         
         // Create a white->transparent gradient over map
-        var mapGradient: CAGradientLayer = CAGradientLayer()
+        let mapGradient: CAGradientLayer = CAGradientLayer()
         mapGradient.frame = CGRectMake(0.0, 0.0, mapView.frame.width, mapView.frame.height+10)
         mapGradient.colors = [colors.transparentWhite.CGColor, colors.white.CGColor]
         mapGradient.locations = [0.0, 1.0]
@@ -254,7 +257,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
         updateHeaderView()
     }
 
-    func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) -> MKAnnotationView! {
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
 
         var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier("pin")
         
@@ -285,7 +288,7 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
    
     func formatPhoneNumber(number: NSString) -> NSString {
     
-        var newStr = NSMutableString(string: number)
+        let newStr = NSMutableString(string: number)
         newStr.insertString("(", atIndex: 0)
         newStr.insertString(")", atIndex: 4)
         newStr.insertString(" ", atIndex: 5)
@@ -308,19 +311,36 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                 analytics.barClicked(name, key: "siteVisits")
                 break;
             case 4:
-                let yelpStr = "search?terms=" + name.replace(" ", withString: "+") + "&location=" + detailTown.replace(" ", withString: "+") + ",IA"
+                // Report a problem
+                let formattedName = name.replace(" ", withString: "")
+                let url = NSURL(string: "http://tabsaver.info/tabsaver/dealsOutdated.php?bar=" + formattedName + "&day=" + dayOfWeekString)
+                if(url != nil) {
+                    let request = NSURLRequest(URL: url!)
+                    NSURLConnection.sendAsynchronousRequest(request, queue: NSOperationQueue.mainQueue()) {(response, data, error) in
+                        print(NSString(data: data!, encoding: NSUTF8StringEncoding))
+                        let alert = UIAlertView()
+                        alert.title = "Thanks!"
+                        alert.message = "We've received your report and have sent the interns to investigate."
+                        alert.delegate = self
+                        alert.addButtonWithTitle("OK")
+                        alert.show()
+                    }
+                }
+
+            case 5:
+                let yelpStr = "search?terms=" + name.replace(" ", withString: "+") + "&location=" + detailTown.replace(" ", withString: "+") + "," + detailState
                 if isYelpInstalled() {
                     // Call into the Yelp app
                     UIApplication.sharedApplication().openURL(NSURL(string: "yelp5.3:///" + yelpStr)!)
                 }
                 else {
                     // Use the website
-                    let urlStr = name.replace(" ", withString: "+") + "&find_loc=" + detailTown.replace(" ", withString: "+") + ",IA"
+                    let urlStr = name.replace(" ", withString: "+") + "&find_loc=" + detailTown.replace(" ", withString: "+") + "," + detailState
                     UIApplication.sharedApplication().openURL(NSURL(string: "http://www.yelp.com/search?find_desc=" + urlStr)!)
                 }
                 analytics.barClicked(name, key: "yelpClicks")
                 break;
-            case 5:
+            case 6:
                 if foursquareID == "None" {
                     let alert = UIAlertView()
                     alert.title = "We're Sorry!"
@@ -341,14 +361,6 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
                 }
                 analytics.barClicked(name, key: "foursquareClicks")
                 break;
-            case 6:
-                // Report a problem
-                let mailComposeViewController = configuredMailComposeViewController()
-                if MFMailComposeViewController.canSendMail() {
-                    self.presentViewController(mailComposeViewController, animated: true, completion: nil)
-                } else {
-                    self.showSendMailErrorAlert()
-                }
             default:
                 break;
         }
@@ -437,33 +449,13 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
         currentInstallation.saveInBackgroundWithBlock({ (succeeded,e) -> Void in
             
             if let error = e {
-                println("Error:  (error.localizedDescription)")
+                self.analytics.log("Error: Push Notification Installation", secondary: error.localizedDescription)
             }
         })
     }
     
     func formatBarName(name: String) -> String {
         return name.replace(" ", withString: "").replace("'", withString: "").replace("!", withString: "").replace("&", withString: "")
-    }
-    
-    func configuredMailComposeViewController() -> MFMailComposeViewController {
-        let mailComposerVC = MFMailComposeViewController()
-        mailComposerVC.mailComposeDelegate = self
-            
-        mailComposerVC.setToRecipients(["leerob@iastate.edu"])
-        mailComposerVC.setSubject(name)
-        mailComposerVC.setMessageBody("Hello,\n\nI've noticed a problem with " + name + " on TabSaver. The problem is...", isHTML: false)
-   
-        return mailComposerVC
-    }
-    
-    func showSendMailErrorAlert() {
-        let sendMailErrorAlert = UIAlertView(title: "Could Not Send Email", message: "Your device could not send e-mail.  Please check e-mail configuration and try again.", delegate: self, cancelButtonTitle: "OK")
-        sendMailErrorAlert.show()
-    }
-    
-    func mailComposeController(controller: MFMailComposeViewController!, didFinishWithResult result: MFMailComposeResult, error: NSError!) {
-        controller.dismissViewControllerAnimated(true, completion: nil)
     }
     
     func scaleImage(image: UIImage, newSize: CGSize) -> UIImage {
@@ -492,12 +484,12 @@ class BarDetail: UITableViewController, UIAlertViewDelegate, MKMapViewDelegate, 
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "goToWebsite" {
-            var WS = segue.destinationViewController as! Website
+            let WS = segue.destinationViewController as! Website
             WS.website = website.text!
         }
         
         if segue.identifier == "AllDeals" {
-            var WD = segue.destinationViewController as! WeeklyDeals
+            let WD = segue.destinationViewController as! WeeklyDeals
             WD.mon = mon.replace(", ", withString: "\n")
             WD.tue = tue.replace(", ", withString: "\n")
             WD.wed = wed.replace(", ", withString: "\n")

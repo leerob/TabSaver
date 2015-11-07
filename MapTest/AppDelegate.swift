@@ -7,19 +7,31 @@
 //
 
 import UIKit
-import Armchair
 import CoreData
 import Parse
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    
+    var analytics = Analytics()
+
+    private var _shortcutItem: AnyObject?
+    @available(iOS 9.0, *)
+    var shortcutItem: UIApplicationShortcutItem? {
+        get {
+            return _shortcutItem as? UIApplicationShortcutItem
+        }
+        set {
+            _shortcutItem = newValue
+        }
+    }
+
     override class func initialize(){
-        Armchair.appID("958415829")
+        //Armchair.appID("958415829")
         //Armchair.debugEnabled(true)
-        Armchair.significantEventsUntilPrompt(1)
+        //Armchair.significantEventsUntilPrompt(1)
     }
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
@@ -30,28 +42,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Register for Push Notitications, if running iOS 8
         if application.respondsToSelector("registerUserNotificationSettings:") {
             
-            let types:UIUserNotificationType = (.Alert | .Badge | .Sound)
+            let types:UIUserNotificationType = ([.Alert, .Badge, .Sound])
             let settings:UIUserNotificationSettings = UIUserNotificationSettings(forTypes: types, categories: nil)
             
             application.registerUserNotificationSettings(settings)
             application.registerForRemoteNotifications()
             
         }
-//        else {
-//            // Register for Push Notifications before iOS 8
-//            application.registerForRemoteNotificationTypes(.Alert | .Badge | .Sound)
-//        }
-        
-        // Set segmented control font
-        var attr = NSDictionary(object: UIFont(name: "San Francisco Display", size: 12.0)!, forKey: NSFontAttributeName)
-        UISegmentedControl.appearance().setTitleTextAttributes(attr as [NSObject : AnyObject], forState: .Normal)
-        
 
-        return true
-    }
+        // Set segmented control font
+        let attr = NSDictionary(object: UIFont(name: "San Francisco Display", size: 12.0)!, forKey: NSFontAttributeName)
+        UISegmentedControl.appearance().setTitleTextAttributes(attr as? [NSObject : AnyObject], forState: .Normal)
+        
+        
+        print("Application did finish launching with options")
+
+        var performShortcutDelegate = true
+
+        if #available(iOS 9.0, *) {
+            if let shortcutItem = launchOptions?[UIApplicationLaunchOptionsShortcutItemKey] as? UIApplicationShortcutItem {
     
+                print("Application launched via shortcut")
+                self.shortcutItem = shortcutItem
+    
+                performShortcutDelegate = false
+            }
+        } else {
+            // Fallback on earlier versions
+        }
+
+        return performShortcutDelegate
+
+    }
+
     func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
-        println("didRegisterForRemoteNotificationsWithDeviceToken")
+        print("didRegisterForRemoteNotificationsWithDeviceToken")
         
         let currentInstallation = PFInstallation.currentInstallation()
         
@@ -62,11 +87,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
-        println("failed to register for remote notifications:  (error)")
+        print("failed to register for remote notifications:  (error)")
     }
     
     func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) {
-        println("didReceiveRemoteNotification")
+        print("didReceiveRemoteNotification")
         PFPush.handlePush(userInfo)
     }
     
@@ -78,13 +103,59 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             currentInstallation.saveEventually({ (succeeded,e) -> Void in
                 
                 if succeeded {
-                    println("Cleared badge")
+                    print("Cleared badge")
                 }
                 if let error = e {
-                    println("Error:  (error.localizedDescription)")
+                    print("Error:  \(error.localizedDescription)")
                 }
             })
         }
+        
+        print("Application did become active")
+        
+        if #available(iOS 9.0, *) {
+            guard let shortcut = shortcutItem else { return }
+            
+            print("- Shortcut property has been set")
+            
+            handleShortcut(shortcut)
+            
+            self.shortcutItem = nil
+            
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+    
+    @available(iOS 9.0, *)
+    func handleShortcut( shortcutItem:UIApplicationShortcutItem ) -> Bool {
+
+        var succeeded = false
+        let root  = self.window!.rootViewController! as! UINavigationController
+        let dailyDealsController = root.topViewController as! DailyDeals
+
+        if shortcutItem.type == "com.tabsaver.calltaxi" {
+            analytics.clicked("Call Taxi Shortcut")
+            dailyDealsController.shortcutItem = "Call Taxi"
+            succeeded = true
+        } else if shortcutItem.type == "com.tabsaver.location" {
+            analytics.clicked("Current Location Shortcut")
+            dailyDealsController.shortcutItem = "Current Location"
+            succeeded = true
+        } else if shortcutItem.type == "com.tabsaver.closestbar" {
+            analytics.clicked("Closest Bar Shortcut")
+            dailyDealsController.shortcutItem = "Closest Bar"
+            succeeded = true
+        }
+
+        return succeeded
+    }
+    
+    @available(iOS 9.0, *)
+    func application(application: UIApplication, performActionForShortcutItem shortcutItem: UIApplicationShortcutItem, completionHandler: (Bool) -> Void) {
+        
+        analytics.log("Error: 3D Touch Shortcut", secondary: "Tried to use while app was open")
+        completionHandler( handleShortcut(shortcutItem) )
     }
 
     func applicationWillResignActive(application: UIApplication) {
@@ -112,7 +183,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     lazy var applicationDocumentsDirectory: NSURL = {
         // The directory the application uses to store the Core Data store file. This code uses a directory named "com.xxxx.ProjectName" in the application's documents Application Support directory.
         let urls = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
-        return urls[urls.count-1] as! NSURL
+        return urls[urls.count-1] 
         }()
     
     lazy var managedObjectModel: NSManagedObjectModel = {
@@ -128,18 +199,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let url = self.applicationDocumentsDirectory.URLByAppendingPathComponent("MapTest.sqlite")
         var error: NSError? = nil
         var failureReason = "There was an error creating or loading the application's saved data."
-        if coordinator!.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options: nil, error: &error) == nil {
+        do {
+            try coordinator!.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options: nil)
+        } catch var error1 as NSError {
+            error = error1
             coordinator = nil
             // Report any error we got.
             let dict = NSMutableDictionary()
             dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data"
             dict[NSLocalizedFailureReasonErrorKey] = failureReason
             dict[NSUnderlyingErrorKey] = error
-            error = NSError(domain: "YOUR_ERROR_DOMAIN", code: 9999, userInfo: dict as [NSObject : AnyObject])
-            // Replace this with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            NSLog("Unresolved error \(error), \(error!.userInfo)")
+            NSLog("Unresolved error \(dict)")
             abort()
+        } catch {
+            fatalError()
         }
         
         return coordinator
@@ -161,11 +234,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func saveContext () {
         if let moc = self.managedObjectContext {
             var error: NSError? = nil
-            if moc.hasChanges && !moc.save(&error) {
-                // Replace this implementation with code to handle the error appropriately.
-                // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                NSLog("Unresolved error \(error), \(error!.userInfo)")
-                abort()
+            if moc.hasChanges {
+                do {
+                    try moc.save()
+                } catch let error1 as NSError {
+                    error = error1
+                    // Replace this implementation with code to handle the error appropriately.
+                    // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+                    NSLog("Unresolved error \(error), \(error!.userInfo)")
+                    abort()
+                }
             }
         }
     }
