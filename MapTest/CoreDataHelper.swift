@@ -14,7 +14,7 @@ let managedContext = appDelegate.managedObjectContext!
 var resultArr = [NSManagedObject]()
 var error: NSError?
 
-class CoreDataHelper{
+class CoreDataHelper {
 
     func saveInt(entityName: String, value: Int, key: String) {
         

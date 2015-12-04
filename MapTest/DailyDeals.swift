@@ -13,7 +13,7 @@ import MapKit
 import Foundation
 import SystemConfiguration
 
-class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, MKMapViewDelegate, CLLocationManagerDelegate, UISearchBarDelegate, SettingsDelegate {
+class DailyDeals: UIViewController, UITableViewDelegate, UIAlertViewDelegate, UITableViewDataSource, MKMapViewDelegate, CLLocationManagerDelegate, UISearchBarDelegate, LocationDelegate {
     
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var segControl: UISegmentedControl!
@@ -44,8 +44,10 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var tapRecognizer = UITapGestureRecognizer()
     var refreshControl = UIRefreshControl()
     
+    let api = FoursquareAPI()
     var colors = Colors()
     var coreDataHelper = CoreDataHelper()
+    var parseHelper = ParseHelper()
     var analytics = Analytics()
     var primary = UIColor()
     var secondary = UIColor()
@@ -55,6 +57,8 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var barCount = 0
     var initialLocation = ""
     var shortcutItem = ""
+    var taxiNumber = ""
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,6 +67,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let alert = UIAlertView()
             alert.title = "Internet Disabled"
             alert.message = "An internet connection is required to use this app. Please reconnect and try again."
+            alert.delegate = self
             alert.addButtonWithTitle("OK")
             alert.show()
             analytics.log("Error: Internet Disabled", secondary: "")
@@ -86,6 +91,10 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             // Set the span and region for the map
             if(locationManager.location == nil) {
                 
+                // Test with Ames location
+                //api.searchForBarsAtLocation(CLLocation(latitude: 42.035021, longitude: -93.645))
+                //api.getBarsRating("4d5ade2cc88da1cd34a94968")
+                
                 let installObj = PFInstallation.currentInstallation()
                 let location = installObj.valueForKey("location")
                 
@@ -101,14 +110,15 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     initialLocation = city
                     analytics.log("App Open", secondary: city)
                 }
+                
+                // Load all the data
+                retrieveBars(initialLocation)
+                retrieveImages(initialLocation)
+                retrieveHours(initialLocation)
             }
             else{
                 setLocation()
             }
-            
-            retrieveBars(initialLocation)
-            retrieveImages(initialLocation)
-            retrieveHours(initialLocation)
             
             // Support for settings
             showDeals = coreDataHelper.getInt("ShowNo", key: "show")
@@ -125,6 +135,11 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let img = scaleImage(UIImage(named: "settings-50.png")!, newSize: CGSize(width: 20.0, height: 20.0))
             let settingsBtn = UIBarButtonItem(image: img, style: UIBarButtonItemStyle.Plain, target: self, action: "goToSettings")
             self.navigationItem.leftBarButtonItem = settingsBtn
+            
+            // Add the taxi button to the right bar button
+            let img2 = scaleImage(UIImage(named: "taxi.png")!, newSize: CGSize(width: 23.0, height: 23.0))
+            let taxiBtn = UIBarButtonItem(image: img2, style: UIBarButtonItemStyle.Plain, target: self, action: "callTaxi")
+            self.navigationItem.rightBarButtonItem = taxiBtn
             
             // Change the font of the search bar
             for subView in listSearchBar.subviews  {
@@ -467,9 +482,10 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let alert = UIAlertView()
             alert.title = "Location Disabled"
             alert.message = "Location must be enabled to view your current location."
+            alert.delegate = self
             alert.addButtonWithTitle("OK")
             alert.show()
-            analytics.log("Error: Location Disabled", secondary: "Current Location")
+            analytics.log("Location Disabled", secondary: "Current Location")
         }
         else {
             selectLocation(locationManager.location!.coordinate.latitude, long: locationManager.location!.coordinate.longitude)
@@ -485,61 +501,60 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     func setLocation() {
         
-        let amesLocation = CLLocation(latitude: 42.035021, longitude: -93.645)
-        let cfLocation = CLLocation(latitude: 42.520700, longitude: -92.438965)
-        let icLocation = CLLocation(latitude: 41.656497, longitude: -91.535339)
-        let dmLocation = CLLocation(latitude: 41.589883, longitude: -93.624183)
-        let moLocation = CLLocation(latitude: 41.506582, longitude: -90.515497)
-        let tmLocation = CLLocation(latitude: 33.424881, longitude: -111.939431)
-        
-        if((locationManager.location!.distanceFromLocation(amesLocation) / 1609.344) < 15) {
-            setMapToCity("Ames")
-            initialLocation = "Ames"
-            analytics.log("App Open", secondary: "Ames")
-        }
+        let query = PFQuery(className:"Locations")
+        query.findObjectsInBackgroundWithBlock {
+            (objects: [AnyObject]?, error: NSError?) -> Void in
             
-        else if((locationManager.location!.distanceFromLocation(cfLocation) / 1609.344) < 30) {
-            setMapToCity("Cedar Falls")
-            initialLocation = "Cedar Falls"
-            analytics.log("App Open", secondary: "Cedar Falls")
+            if error == nil {
+                if let objects = objects as? [PFObject] {
+                    var closestDistance = 100.0
+                    var closestCity = "Ames"
+                    
+                    for object in objects {
+                        let location = Location(city: object["cityName"] as! String,
+                                                state: object["state"] as! String,
+                                                taxiService: object["taxiService"] as! String,
+                                                taxiNumber: object["taxiNumber"] as! String,
+                                                lat: object["lat"] as! Double,
+                                                long: object["long"] as! Double)
+                        
+                        let gps = CLLocation(latitude: location.lat, longitude: location.long)
+                        let distance = self.locationManager.location!.distanceFromLocation(gps) / 1609.344
+                        
+                        if distance < closestDistance {
+                            closestDistance = distance
+                            closestCity = location.city
+                        }
+                    }
+                    
+                    self.setMapToCity(closestCity)
+                    self.initialLocation = closestCity
+                    
+                    if closestDistance == 100.0 {
+                        let lat = self.locationManager.location!.coordinate.latitude
+                        let long = self.locationManager.location!.coordinate.longitude
+                        self.analytics.log("App Open", secondary: "Lat: \(lat), Long: \(long)")
+                    } else {
+                        self.analytics.log("App Open", secondary: closestCity)
+                    }
+                    
+                    
+                    let installObj = PFInstallation.currentInstallation()
+                    installObj.setValue(self.initialLocation, forKey: "location")
+                    installObj.saveInBackground()
+                    
+                    // At this point we have the location, so we are able to query the taxi call
+                    self.handleShortcutItem()
+                    
+                    // Load all the data
+                    self.retrieveBars(self.initialLocation)
+                    self.retrieveImages(self.initialLocation)
+                    self.retrieveHours(self.initialLocation)
+                }
+            } else {
+                self.analytics.log("Error: Retrieving Locations", secondary: error!.localizedDescription)
+            }
         }
-            
-        else if((locationManager.location!.distanceFromLocation(icLocation) / 1609.344) < 30) {
-            setMapToCity("Iowa City")
-            initialLocation = "Iowa City"
-            analytics.log("App Open", secondary: "Iowa City")
-        }
-            
-        else if((locationManager.location!.distanceFromLocation(dmLocation) / 1609.344) < 30) {
-            setMapToCity("Des Moines")
-            initialLocation = "Des Moines"
-            analytics.log("App Open", secondary: "Des Moines")
-        }
-            
-        else if((locationManager.location!.distanceFromLocation(moLocation) / 1609.344) < 30) {
-            setMapToCity("Moline")
-            initialLocation = "Moline"
-            analytics.log("App Open", secondary: "Moline")
-        }
-            
-        else if((locationManager.location!.distanceFromLocation(tmLocation) / 1609.344) < 100) {
-            setMapToCity("Tempe")
-            initialLocation = "Tempe"
-            analytics.log("App Open", secondary: "Tempe")
-        }
-            
-        else { // Default to Ames location
-            setMapToCity("Ames")
-            initialLocation = "Ames"
-            analytics.log("App Open", secondary: "Ames")
-        }
-        
-        let installObj = PFInstallation.currentInstallation()
-        installObj.setValue(initialLocation, forKey: "location")
-        installObj.saveInBackground()
-        
-        // At this point we have the location, so we are able to query the taxi call
-        handleShortcutItem()
     }
     
     func setMapToCity(city: String) {
@@ -547,21 +562,26 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let span = MKCoordinateSpanMake(0.075, 0.075)
         var region = MKCoordinateRegion()
         
-        if city == "Ames" {
-            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.035021, longitude: -93.645), span: span)
-        } else if city == "Cedar Falls" {
-            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.520700, longitude: -92.438965), span: span)
-        } else if city == "Iowa City" {
-            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.656497, longitude: -91.535339), span: span)
-        } else if city == "Des Moines" {
-            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.589883, longitude: -93.624183), span: span)
-        } else if city == "Moline" {
-            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 41.506582, longitude: -90.515497), span: span)
-        } else if city == "Tempe" {
-            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 33.424881, longitude: -111.939431), span: span)
+        let query = PFQuery(className:"Locations")
+        query.findObjectsInBackgroundWithBlock {
+            (objects: [AnyObject]?, error: NSError?) -> Void in
+            
+            if error == nil {
+                if let objects = objects as? [PFObject] {
+                    for object in objects {
+                        if object["cityName"] as! String == city {
+                            let lat = object["lat"] as! Double
+                            let long = object["long"] as! Double
+                            region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: lat, longitude: long), span: span)
+                            break
+                        }
+                    }
+                    self.mapView.setRegion(region, animated: false)
+                }
+            } else {
+                self.analytics.log("Error: Retrieving Locations", secondary: error!.localizedDescription)
+            }
         }
-        
-        mapView.setRegion(region, animated: true)
     }
 
     func setDistances() {
@@ -705,7 +725,6 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 sortBars()
                 tableView.reloadData()
                 autoCompleteBars = NSMutableArray(array: bars.copy() as! [BarAnnotation])
-                //autoCompleteTable.hidden = true
                 autoCompleteTable.reloadData()
             }
             else {
@@ -832,19 +851,7 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     func handleShortcutItem() {
 
         if shortcutItem == "Call Taxi" {
-            let query = PFQuery(className: "Locations")
-            query.whereKey("cityName", equalTo: initialLocation)
-            findAsync(query).continueWithSuccessBlock {
-                (task: BFTask!) -> AnyObject! in
-                
-                let arr = task.result as! NSArray
-                let city = arr[0] as! PFObject
-                let taxiNumber = city.valueForKey("taxiNumber") as! String
-                let url = NSURL(string: "tel://\(taxiNumber)")!
-                UIApplication.sharedApplication().openURL(url)
-                
-                return nil
-            }
+            callTaxi()
         } else if shortcutItem == "Current Location" {
             goToList()
             goToCurrentLoc(self)
@@ -854,6 +861,45 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
 //            self.tableView.selectRowAtIndexPath(row, animated: false, scrollPosition: UITableViewScrollPosition.None)
 //            self.tableView(self.tableView, didSelectRowAtIndexPath: row)
 //            
+        }
+    }
+    
+    func callTaxi() {
+        analytics.clicked("Call Taxi")
+        let query = PFQuery(className: "Locations")
+        query.whereKey("cityName", equalTo: initialLocation)
+        findAsync(query).continueWithSuccessBlock {
+            (task: BFTask!) -> AnyObject! in
+            
+            let arr = task.result as! NSArray
+            let city = arr[0] as! PFObject
+            self.taxiNumber = city.valueForKey("taxiNumber") as! String
+            let taxiName = city.valueForKey("taxiService") as! String
+            
+            let alert = UIAlertView()
+            alert.title = "Call Taxi"
+            alert.message = "Are you sure you want to call \(taxiName) of \(self.initialLocation)?"
+            alert.delegate = self
+            alert.addButtonWithTitle("Call")
+            alert.addButtonWithTitle("Cancel")
+            alert.cancelButtonIndex = 1
+            alert.show()
+            
+            return nil
+        }
+    }
+    
+    func alertView(alertView: UIAlertView, clickedButtonAtIndex buttonIndex: Int) {
+        switch buttonIndex {
+            case 0:
+                if(alertView.buttonTitleAtIndex(0)! == "Call") {
+                    let url = NSURL(string: "tel://\(taxiNumber)")!
+                    UIApplication.sharedApplication().openURL(url)
+                    break;
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -1003,11 +1049,14 @@ class DailyDeals: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         return image
     }
     
-    func updateLocation(location: String) {
+    func updateLocation(location: String, lat: Double, long: Double) {
         initialLocation = location
         retrieveBars(initialLocation)
         retrieveImages(initialLocation)
         retrieveHours(initialLocation)
+        let span = MKCoordinateSpanMake(0.075, 0.075)
+        let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: lat, longitude: long), span: span)
+        mapView.setRegion(region, animated: false)
     }
     
     func isConnectedToNetwork() -> Bool {

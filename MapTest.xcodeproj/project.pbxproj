@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		9B08D61D1B269145002E224C /* loading.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B08D61C1B269145002E224C /* loading.png */; };
+		9B28B83E1BEEAB4400D86EC5 /* taxi.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B28B83D1BEEAB4400D86EC5 /* taxi.png */; };
+		9B2EC1571C08FFA900E5A343 /* FoursquareAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2EC1561C08FFA900E5A343 /* FoursquareAPI.swift */; };
+		9B2EC1591C0907EB00E5A343 /* SuggestedBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2EC1581C0907EB00E5A343 /* SuggestedBar.swift */; };
 		9B44E4911B13D31F001BAA4B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B44E4901B13D31F001BAA4B /* AudioToolbox.framework */; };
 		9B452BD31B15698A00A453FA /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B452BD21B15698A00A453FA /* ParseUI.framework */; };
 		9B4C768E1AF86DEA00DB979E /* CoreDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B4C768D1AF86DEA00DB979E /* CoreDataHelper.swift */; };
@@ -16,6 +19,10 @@
 		9B69A5741A770F480089F5C3 /* settings-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B69A5731A770F480089F5C3 /* settings-50.png */; };
 		9B69A57C1A79E42E0089F5C3 /* star-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B69A5781A79E42E0089F5C3 /* star-50.png */; };
 		9B69A57E1A7C44B40089F5C3 /* SegControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B69A57D1A7C44B40089F5C3 /* SegControl.swift */; };
+		9B7A6D811C113ACF00C039FE /* LocationsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7A6D801C113ACF00C039FE /* LocationsList.swift */; };
+		9B7A6D831C113C3300C039FE /* ParseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7A6D821C113C3300C039FE /* ParseHelper.swift */; };
+		9B7A6D851C113D3300C039FE /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7A6D841C113D3300C039FE /* Location.swift */; };
+		9B7A6D871C114DB200C039FE /* LocationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7A6D861C114DB200C039FE /* LocationCell.swift */; };
 		9B9865B51A35405B004E07A2 /* DealCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9865B41A35405B004E07A2 /* DealCell.swift */; };
 		9B9865C11A3569DC004E07A2 /* DailyDeals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9865C01A3569DC004E07A2 /* DailyDeals.swift */; };
 		9B9887091AEF2CC000DA09F8 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B9887071AEF2CC000DA09F8 /* Bolts.framework */; };
@@ -105,6 +112,9 @@
 
 /* Begin PBXFileReference section */
 		9B08D61C1B269145002E224C /* loading.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = loading.png; sourceTree = "<group>"; };
+		9B28B83D1BEEAB4400D86EC5 /* taxi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = taxi.png; sourceTree = "<group>"; };
+		9B2EC1561C08FFA900E5A343 /* FoursquareAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FoursquareAPI.swift; sourceTree = "<group>"; };
+		9B2EC1581C0907EB00E5A343 /* SuggestedBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuggestedBar.swift; sourceTree = "<group>"; };
 		9B44E48F1B13D31E001BAA4B /* tabsaver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = tabsaver.entitlements; sourceTree = "<group>"; };
 		9B44E4901B13D31F001BAA4B /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		9B452BD21B15698A00A453FA /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = MapTest/ParseUI.framework; sourceTree = "<group>"; };
@@ -114,6 +124,10 @@
 		9B69A5731A770F480089F5C3 /* settings-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "settings-50.png"; sourceTree = "<group>"; };
 		9B69A5781A79E42E0089F5C3 /* star-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-50.png"; sourceTree = "<group>"; };
 		9B69A57D1A7C44B40089F5C3 /* SegControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegControl.swift; sourceTree = "<group>"; };
+		9B7A6D801C113ACF00C039FE /* LocationsList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationsList.swift; sourceTree = "<group>"; };
+		9B7A6D821C113C3300C039FE /* ParseHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParseHelper.swift; sourceTree = "<group>"; };
+		9B7A6D841C113D3300C039FE /* Location.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
+		9B7A6D861C114DB200C039FE /* LocationCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationCell.swift; sourceTree = "<group>"; };
 		9B9865B41A35405B004E07A2 /* DealCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealCell.swift; sourceTree = "<group>"; };
 		9B9865C01A3569DC004E07A2 /* DailyDeals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DailyDeals.swift; path = MapTest/DailyDeals.swift; sourceTree = "<group>"; };
 		9B9887071AEF2CC000DA09F8 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = MapTest/Bolts.framework; sourceTree = "<group>"; };
@@ -291,6 +305,7 @@
 				9BA428591ADDEB7200578522 /* FavoritesList.swift */,
 				9B9887271AF084FE00DA09F8 /* ClientUpdate.swift */,
 				9B9887231AF0777000DA09F8 /* ClientLogin.swift */,
+				9B7A6D801C113ACF00C039FE /* LocationsList.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -378,6 +393,11 @@
 				9B9865B41A35405B004E07A2 /* DealCell.swift */,
 				9B69A57D1A7C44B40089F5C3 /* SegControl.swift */,
 				9BA8EF471AAD319300962C81 /* Website.swift */,
+				9B2EC1581C0907EB00E5A343 /* SuggestedBar.swift */,
+				9B2EC1561C08FFA900E5A343 /* FoursquareAPI.swift */,
+				9B7A6D821C113C3300C039FE /* ParseHelper.swift */,
+				9B7A6D841C113D3300C039FE /* Location.swift */,
+				9B7A6D861C114DB200C039FE /* LocationCell.swift */,
 				9BBFDE981A32511D00AF510D /* Supporting Files */,
 			);
 			path = MapTest;
@@ -386,6 +406,7 @@
 		9BBFDE981A32511D00AF510D /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9B28B83D1BEEAB4400D86EC5 /* taxi.png */,
 				9B08D61C1B269145002E224C /* loading.png */,
 				9BBD0F8E1A3D47A500F4E54E /* transparent.png */,
 				9BA4285D1ADE042E00578522 /* check.png */,
@@ -492,6 +513,7 @@
 				9BBD0F9D1A4549FF00F4E54E /* Ames, IA.gpx in Resources */,
 				9BD2D6DB1B08337B0027B2F8 /* star2.png in Resources */,
 				9BBFDEA51A32511D00AF510D /* LaunchScreen.xib in Resources */,
+				9B28B83E1BEEAB4400D86EC5 /* taxi.png in Resources */,
 				9BBFDEA21A32511D00AF510D /* Images.xcassets in Resources */,
 				9BBD0F9B1A4549E100F4E54E /* Iowa City, IA.gpx in Resources */,
 				9BF2700B1B2CDBF500ADCF42 /* System San Francisco Display Medium.ttf in Resources */,
@@ -519,16 +541,20 @@
 				9BBC2D111B925671002295DB /* NVActivityIndicatorAnimationBallClipRotatePulse.swift in Sources */,
 				9BF5E57C1B5C974D000B719E /* Analytics.swift in Sources */,
 				9BBC2D1B1B925671002295DB /* NVActivityIndicatorAnimationBallScaleRippleMultiple.swift in Sources */,
+				9B7A6D831C113C3300C039FE /* ParseHelper.swift in Sources */,
 				9BBFDEC11A34FECD00AF510D /* BarAnnotation.swift in Sources */,
 				9BBC2D1A1B925671002295DB /* NVActivityIndicatorAnimationBallScaleRipple.swift in Sources */,
 				9BBC2D241B925671002295DB /* NVActivityIndicatorAnimationLineScalePulseOut.swift in Sources */,
 				9BBC2D151B925671002295DB /* NVActivityIndicatorAnimationBallPulseRise.swift in Sources */,
+				9B7A6D851C113D3300C039FE /* Location.swift in Sources */,
+				9B2EC1591C0907EB00E5A343 /* SuggestedBar.swift in Sources */,
 				9BBC2D221B925671002295DB /* NVActivityIndicatorAnimationLineScale.swift in Sources */,
 				9BBC2D261B925671002295DB /* NVActivityIndicatorAnimationLineSpinFadeLoader.swift in Sources */,
 				9BBC2D0F1B925671002295DB /* NVActivityIndicatorAnimationBallClipRotate.swift in Sources */,
 				9BABC27D1ADCD68200A2239B /* dataModel.xcdatamodeld in Sources */,
 				9B69A57E1A7C44B40089F5C3 /* SegControl.swift in Sources */,
 				9BBC2D1C1B925671002295DB /* NVActivityIndicatorAnimationBallSpinFadeLoader.swift in Sources */,
+				9B7A6D871C114DB200C039FE /* LocationCell.swift in Sources */,
 				9BA20B371B1A6FC400A62F73 /* WeeklyDeals.swift in Sources */,
 				9BBC2D1F1B925671002295DB /* NVActivityIndicatorAnimationBallZigZagDeflect.swift in Sources */,
 				9BBC2D161B925671002295DB /* NVActivityIndicatorAnimationBallPulseSync.swift in Sources */,
@@ -540,6 +566,7 @@
 				9BBC2D271B925671002295DB /* NVActivityIndicatorAnimationPacman.swift in Sources */,
 				9BA8EF481AAD319300962C81 /* Website.swift in Sources */,
 				9BBC2D191B925671002295DB /* NVActivityIndicatorAnimationBallScaleMultiple.swift in Sources */,
+				9B7A6D811C113ACF00C039FE /* LocationsList.swift in Sources */,
 				9BBC2D131B925671002295DB /* NVActivityIndicatorAnimationBallGridPulse.swift in Sources */,
 				9BBC2D1E1B925671002295DB /* NVActivityIndicatorAnimationBallZigZag.swift in Sources */,
 				9BBC2D141B925671002295DB /* NVActivityIndicatorAnimationBallPulse.swift in Sources */,
@@ -553,6 +580,7 @@
 				9BBC2D201B925671002295DB /* NVActivityIndicatorAnimationBlank.swift in Sources */,
 				9BBC2D211B925671002295DB /* NVActivityIndicatorAnimationCubeTransition.swift in Sources */,
 				9BBC2D1D1B925671002295DB /* NVActivityIndicatorAnimationBallTrianglePath.swift in Sources */,
+				9B2EC1571C08FFA900E5A343 /* FoursquareAPI.swift in Sources */,
 				9BBFDE9B1A32511D00AF510D /* AppDelegate.swift in Sources */,
 				9BA4285A1ADDEB7200578522 /* FavoritesList.swift in Sources */,
 				9BBC2D231B925671002295DB /* NVActivityIndicatorAnimationLineScaleParty.swift in Sources */,

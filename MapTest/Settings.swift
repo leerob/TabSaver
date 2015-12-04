@@ -10,21 +10,9 @@ import UIKit
 import MessageUI
 import Parse
 
-
-protocol SettingsDelegate {
-    func selectLocation(lat: Double, long: Double)
-    func updateLocation(location: String)
-}
-
 class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
 
     @IBOutlet var table: UITableView!
-    @IBOutlet weak var amesCheck: UIImageView!
-    @IBOutlet weak var icCheck: UIImageView!
-    @IBOutlet weak var cfCheck: UIImageView!
-    @IBOutlet weak var dsmCheck: UIImageView!
-    @IBOutlet weak var moCheck: UIImageView!
-    @IBOutlet weak var tmCheck: UIImageView!
     @IBOutlet weak var defaultCheck: UIImageView!
     @IBOutlet weak var cyclonesCheck: UIImageView!
     @IBOutlet weak var hawkeyesCheck: UIImageView!
@@ -36,17 +24,17 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
     
     var theme = 0
     var coreDataHelper = CoreDataHelper()
+    var parseHelper = ParseHelper()
     var analytics = Analytics()
-    var delegate: SettingsDelegate? = nil
+    var delegate: LocationDelegate? = nil
     var cellExpanded = false
     var initialLocation = ""
-    var taxiNumber = ""
+    var locations = NSMutableArray()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        getTaxiService()
-        toggleLoactionChecks(initialLocation)
+        locations = parseHelper.getLocations()
         theme = coreDataHelper.getInt("Theme", key: "themeNumber")
         switch(theme){
             case 0:
@@ -114,10 +102,6 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
             coreDataHelper.saveInt("ShowFav", value: 1, key: "show")
         }
     }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-    }
 
     @IBAction func closeSettings(sender: AnyObject) {
         self.dismissViewControllerAnimated(true, completion: nil)
@@ -125,51 +109,6 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         switch indexPath.section {
-            case 0:
-                
-                // LOCATIONS //
-                switch indexPath.row {
-                    case 0: // Ames
-                        toggleLoactionChecks("Ames")
-                        self.delegate?.updateLocation("Ames")
-                        self.delegate?.selectLocation(42.035021, long: -93.645)
-                        analytics.clicked("Ames")
-                        break;
-                    case 1: // Iowa City
-                        toggleLoactionChecks("Iowa City")
-                        self.delegate?.updateLocation("Iowa City")
-                        self.delegate?.selectLocation(41.656497, long: -91.535339)
-                        analytics.clicked("Iowa City")
-                        break;
-                    case 2: // Cedar Falls
-                        toggleLoactionChecks("Cedar Falls")
-                        self.delegate?.updateLocation("Cedar Falls")
-                        self.delegate?.selectLocation(42.520700, long: -92.438965)
-                        analytics.clicked("Cedar Falls")
-                        break;
-                    case 3: // Des Moines
-                        toggleLoactionChecks("Des Moines")
-                        self.delegate?.updateLocation("Des Moines")
-                        self.delegate?.selectLocation(41.589883, long: -93.624183)
-                        analytics.clicked("Des Moines")
-                        break;
-                    case 4: // Moline
-                        toggleLoactionChecks("Moline")
-                        self.delegate?.updateLocation("Moline")
-                        self.delegate?.selectLocation(41.506582, long: -90.515497)
-                        analytics.clicked("Moline")
-                        break;
-                    case 5: // Tempe
-                        toggleLoactionChecks("Tempe")
-                        self.delegate?.updateLocation("Tempe")
-                        self.delegate?.selectLocation(33.424881, long: -111.939431)
-                        analytics.clicked("Tempe")
-                        break;
-                    default:
-                        self.delegate?.selectLocation(42.035021, long: -93.645)
-                        break;
-                }
-                break;
             case 1:
                 // THEMES //
                 switch indexPath.row {
@@ -248,12 +187,7 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
             // SUPPORT //
             case 3:
                 switch indexPath.row {
-                    case 0: // Call Taxi
-                        analytics.clicked("Call Taxi")
-                        let url = NSURL(string: "tel://\(taxiNumber)")!
-                        UIApplication.sharedApplication().openURL(url)
-                        break
-                    case 1: // Contact Us
+                    case 0: // Contact Us
                         // Create an email
                         let mailComposeViewController = configuredMailComposeViewController()
                         if MFMailComposeViewController.canSendMail() {
@@ -262,7 +196,7 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
                             self.showSendMailErrorAlert()
                         }
                         break
-                    case 2: // Client Login
+                    case 1: // Client Login
                         analytics.clicked("Client Login")
                         break
 //                    case 3: // Rate TabSaver
@@ -280,43 +214,10 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
         table.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
-    func getTaxiService() {
-        let query = PFQuery(className: "Locations")
-        query.whereKey("cityName", equalTo: initialLocation)
-        findAsync(query).continueWithSuccessBlock {
-            (task: BFTask!) -> AnyObject! in
-
-            let arr = task.result as! NSArray
-            let city = arr[0] as! PFObject
-            self.taxiNumber = city.valueForKey("taxiNumber") as! String
-            
-            return nil
-        }
-    }
-    
-    func findAsync(query:PFQuery) -> BFTask {
-        let task = BFTaskCompletionSource()
-        query.findObjectsInBackgroundWithBlock {
-            (objects, error) -> Void in
-            if error == nil {
-                task.setResult(objects)
-            } else {
-                task.setError(error)
-            }
-        }
-        return task.task
-    }
- 
     override func tableView(tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         let header = view as! UITableViewHeaderFooterView
         header.textLabel!.textColor = UIColor.lightGrayColor()
         header.textLabel!.font = UIFont(name: ".HelveticaNeueDeskInterface-Regular", size: 14.0)
-        
-//        San Francisco Display
-//        .HelveticaNeueDeskInterface-MediumP4
-//        .HelveticaNeueDeskInterface-UltraLightP2
-//        .HelveticaNeueDeskInterface-Regular
-//        .HelveticaNeueDeskInterface-Thin
     }
     
     func configuredMailComposeViewController() -> MFMailComposeViewController {
@@ -336,9 +237,20 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
     func mailComposeController(controller: MFMailComposeViewController, didFinishWithResult result: MFMailComposeResult, error: NSError?) {
         controller.dismissViewControllerAnimated(true, completion: nil)
     }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "LocationsList" {
+            let LL = segue.destinationViewController as! LocationsList
+            LL.locations = locations
+            LL.initialLocation = initialLocation
+            LL.delegate = delegate
+            LL.settingsPage = self
+            analytics.clicked("Change Location")
+        }
+    }
 
     func toggleChecks(pressedCheck: String){
-        
+
         if pressedCheck == "Default" {
             defaultCheck.hidden = false
             cyclonesCheck.hidden = true
@@ -363,62 +275,6 @@ class Settings: UITableViewController, MFMailComposeViewControllerDelegate {
             hawkeyesCheck.hidden = true
             panthersCheck.hidden = false
             
-        }
-    }
-    
-    func toggleLoactionChecks(pressedCheck: String){
-        
-        let installObj = PFInstallation.currentInstallation()
-        installObj.setValue(pressedCheck, forKey: "location")
-        installObj.saveInBackground()
-        
-        if pressedCheck == "Ames" {
-            amesCheck.hidden = false
-            icCheck.hidden = true
-            cfCheck.hidden = true
-            dsmCheck.hidden = true
-            moCheck.hidden = true
-            tmCheck.hidden = true
-        }
-        else if pressedCheck == "Iowa City" {
-            amesCheck.hidden = true
-            icCheck.hidden = false
-            cfCheck.hidden = true
-            dsmCheck.hidden = true
-            moCheck.hidden = true
-            tmCheck.hidden = true
-        }
-        else if pressedCheck == "Cedar Falls" {
-            amesCheck.hidden = true
-            icCheck.hidden = true
-            cfCheck.hidden = false
-            dsmCheck.hidden = true
-            moCheck.hidden = true
-            tmCheck.hidden = true
-        }
-        else if pressedCheck == "Moline" {
-            amesCheck.hidden = true
-            icCheck.hidden = true
-            cfCheck.hidden = true
-            dsmCheck.hidden = true
-            moCheck.hidden = false
-            tmCheck.hidden = true
-        }
-        else if pressedCheck == "Tempe" {
-            amesCheck.hidden = true
-            icCheck.hidden = true
-            cfCheck.hidden = true
-            dsmCheck.hidden = true
-            moCheck.hidden = true
-            tmCheck.hidden = false
-        }
-        else { // Des Moines
-            amesCheck.hidden = true
-            icCheck.hidden = true
-            cfCheck.hidden = true
-            dsmCheck.hidden = false
-            moCheck.hidden = true
-            tmCheck.hidden = true
         }
     }
 }
